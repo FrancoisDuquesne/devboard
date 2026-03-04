@@ -5,17 +5,20 @@ import type {
   GitLabMergeRequest,
   GitLabProject,
 } from "~~/app/types";
-import { gitlabFetch, gitlabFetchAllPages } from "~~/server/utils/gitlab-client";
+import { TtlCache } from "~~/server/utils/cache";
+import {
+  gitlabFetch,
+  gitlabFetchAllPages,
+  mapWithConcurrency,
+} from "~~/server/utils/gitlab-client";
 import { errorMessage } from "~~/server/utils/log";
 import { normalizeMr } from "~~/server/utils/normalize";
 
-const projectCache = new Map<number, string>();
+const projectCache = new TtlCache<number, string>();
 
 async function getProjectPath(projectId: number): Promise<string> {
   const cached = projectCache.get(projectId);
-  if (cached) {
-    return cached;
-  }
+  if (cached) return cached;
   const project = await gitlabFetch<GitLabProject>(`/projects/${projectId}`);
   projectCache.set(projectId, project.path_with_namespace);
   return project.path_with_namespace;
@@ -40,58 +43,54 @@ export default defineEventHandler(async () => {
 
   const uniqueMrs = Array.from(mrMap.values());
 
-  const results = await Promise.allSettled(
-    uniqueMrs.map(async (mr) => {
-      const encodedProject = encodeURIComponent(await getProjectPath(mr.project_id));
+  const results = await mapWithConcurrency(uniqueMrs, async (mr) => {
+    const encodedProject = encodeURIComponent(await getProjectPath(mr.project_id));
 
-      const [approvals, discussions] = await Promise.all([
-        gitlabFetch<GitLabApprovals>(
-          `/projects/${encodedProject}/merge_requests/${mr.iid}/approvals`,
-        ).catch((e) => {
-          console.warn(
-            `Failed to fetch approvals for MR ${mr.iid}: ${errorMessage(e)}`,
-          );
-          return undefined;
-        }),
-        gitlabFetchAllPages<GitLabDiscussion>(
-          `/projects/${encodedProject}/merge_requests/${mr.iid}/discussions`,
-        ).catch((e) => {
-          console.warn(
-            `Failed to fetch discussions for MR ${mr.iid}: ${errorMessage(e)}`,
-          );
-          return [];
-        }),
-      ]);
-
-      const projectPath = await getProjectPath(mr.project_id);
-      const normalized = normalizeMr(mr, projectPath, approvals, discussions);
-
-      // Enrich linked issues with titles and URLs
-      if (normalized.linkedIssues.length > 0) {
-        await Promise.all(
-          normalized.linkedIssues.map(async (issue) => {
-            try {
-              const gitlabIssue = await gitlabFetch<GitLabIssue>(
-                `/projects/${encodedProject}/issues/${issue.iid}`,
-              );
-              issue.title = gitlabIssue.title;
-              issue.webUrl = gitlabIssue.web_url;
-              issue.id = gitlabIssue.id;
-              issue.state = gitlabIssue.state;
-              issue.projectId = mr.project_id;
-              if (gitlabIssue.references?.full) {
-                issue.reference = gitlabIssue.references.full;
-              }
-            } catch {
-              // Issue not found or no access — keep stub
-            }
-          }),
+    const [approvals, discussions] = await Promise.all([
+      gitlabFetch<GitLabApprovals>(
+        `/projects/${encodedProject}/merge_requests/${mr.iid}/approvals`,
+      ).catch((e) => {
+        console.warn(`Failed to fetch approvals for MR ${mr.iid}: ${errorMessage(e)}`);
+        return undefined;
+      }),
+      gitlabFetchAllPages<GitLabDiscussion>(
+        `/projects/${encodedProject}/merge_requests/${mr.iid}/discussions`,
+      ).catch((e) => {
+        console.warn(
+          `Failed to fetch discussions for MR ${mr.iid}: ${errorMessage(e)}`,
         );
-      }
+        return [];
+      }),
+    ]);
 
-      return normalized;
-    }),
-  );
+    const projectPath = await getProjectPath(mr.project_id);
+    const normalized = normalizeMr(mr, projectPath, approvals, discussions);
+
+    // Enrich linked issues with titles and URLs
+    if (normalized.linkedIssues.length > 0) {
+      await Promise.all(
+        normalized.linkedIssues.map(async (issue) => {
+          try {
+            const gitlabIssue = await gitlabFetch<GitLabIssue>(
+              `/projects/${encodedProject}/issues/${issue.iid}`,
+            );
+            issue.title = gitlabIssue.title;
+            issue.webUrl = gitlabIssue.web_url;
+            issue.id = gitlabIssue.id;
+            issue.state = gitlabIssue.state;
+            issue.projectId = mr.project_id;
+            if (gitlabIssue.references?.full) {
+              issue.reference = gitlabIssue.references.full;
+            }
+          } catch {
+            // Issue not found or no access — keep stub
+          }
+        }),
+      );
+    }
+
+    return normalized;
+  });
 
   const enriched = results
     .filter(

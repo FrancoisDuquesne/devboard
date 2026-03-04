@@ -42,7 +42,7 @@ const isDraft = computed(() => props.data.status === "draft");
 function handleClick(event: MouseEvent) {
   if (event.ctrlKey || event.metaKey) {
     event.stopPropagation();
-    window.open(props.data.webUrl, "_blank", "noopener,noreferrer");
+    safeOpen(props.data.webUrl);
   }
 }
 </script>
@@ -63,7 +63,7 @@ function handleClick(event: MouseEvent) {
       <div class="flex items-center justify-between gap-1">
         <UTooltip :text="data.title">
           <a
-            :href="data.webUrl"
+            :href="isSafeUrl(data.webUrl) ? data.webUrl : undefined"
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center gap-1 truncate text-sm font-medium leading-snug hover:underline"

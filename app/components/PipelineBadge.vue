@@ -34,9 +34,7 @@ const config = computed(() => {
 });
 
 function openPipeline() {
-  if (props.webUrl) {
-    window.open(props.webUrl, "_blank", "noopener,noreferrer");
-  }
+  safeOpen(props.webUrl);
 }
 </script>
 

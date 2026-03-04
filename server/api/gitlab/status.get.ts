@@ -1,5 +1,6 @@
 import { getGitLabHost } from "~~/server/utils/gitlab-auth";
 import { gitlabFetch } from "~~/server/utils/gitlab-client";
+import { errorMessage } from "~~/server/utils/log";
 
 interface GitLabUserResponse {
   username: string;
@@ -18,7 +19,7 @@ export default defineEventHandler(async () => {
       avatarUrl: user.avatar_url,
     };
   } catch (error) {
-    console.error("GitLab connection check failed:", error);
+    console.error("GitLab connection check failed:", errorMessage(error));
     let host = "";
     try {
       host = getGitLabHost();

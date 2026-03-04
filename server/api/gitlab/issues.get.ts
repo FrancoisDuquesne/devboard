@@ -1,8 +1,9 @@
 import type { GitLabIssue, GitLabProject } from "~~/app/types";
+import { TtlCache } from "~~/server/utils/cache";
 import { gitlabFetch, gitlabFetchAllPages } from "~~/server/utils/gitlab-client";
 import { normalizeIssue } from "~~/server/utils/normalize";
 
-const projectCache = new Map<number, string>();
+const projectCache = new TtlCache<number, string>();
 
 async function getProjectPath(projectId: number): Promise<string> {
   const cached = projectCache.get(projectId);

@@ -31,9 +31,7 @@ const targetIssue = computed<DevBoardIssue | null>(() => {
 
 function openTarget(event: MouseEvent) {
   event.stopPropagation();
-  if (props.data.targetUrl) {
-    window.open(props.data.targetUrl, "_blank", "noopener,noreferrer");
-  }
+  safeOpen(props.data.targetUrl);
 }
 </script>
 
@@ -67,7 +65,7 @@ function openTarget(event: MouseEvent) {
       />
       <a
         v-else-if="isMr"
-        :href="data.targetUrl"
+        :href="isSafeUrl(data.targetUrl) ? data.targetUrl : undefined"
         target="_blank"
         rel="noopener noreferrer"
         class="flex items-center gap-1 truncate text-sm font-medium leading-snug hover:underline"

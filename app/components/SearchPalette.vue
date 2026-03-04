@@ -53,7 +53,7 @@ const groups = computed(() => [
       description: issue.projectPath ?? "",
       icon: issue.state === "closed" ? "i-lucide-circle-check" : "i-lucide-circle-dot",
       onSelect() {
-        window.open(issue.webUrl, "_blank", "noopener,noreferrer");
+        safeOpen(issue.webUrl);
         searchOpen.value = false;
       },
     })),
@@ -78,7 +78,7 @@ const groups = computed(() => [
           if (mr) {
             selectedMr.value = mr;
           } else {
-            window.open(todo.targetUrl, "_blank", "noopener,noreferrer");
+            safeOpen(todo.targetUrl);
           }
           searchOpen.value = false;
         },

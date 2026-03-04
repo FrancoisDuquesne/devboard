@@ -32,6 +32,8 @@ function copyToClipboard(value: string, field: string) {
   }, COPY_FEEDBACK_MS);
 }
 
+const SAFE_PATH_RE = /^[\w.\-/]+$/;
+
 function getDependencyUrl(dep: string): string | null {
   if (!detail.value?.webUrl) return null;
   const match = dep.match(/^(?:(.+)!)?!?(\d+)$/);
@@ -42,6 +44,7 @@ function getDependencyUrl(dep: string): string | null {
   if (!baseMatch) return null;
   const host = baseMatch[1];
   if (projectPath) {
+    if (!SAFE_PATH_RE.test(projectPath)) return null;
     return `${host}/${projectPath}/-/merge_requests/${iid}`;
   }
   const projectMatch = detail.value.webUrl.match(
@@ -65,9 +68,7 @@ watch(
 );
 
 function openInGitLab() {
-  if (detail.value?.webUrl) {
-    window.open(detail.value.webUrl, "_blank", "noopener,noreferrer");
-  }
+  safeOpen(detail.value?.webUrl);
 }
 </script>
 
@@ -227,7 +228,7 @@ function openInGitLab() {
             <a
               v-for="issue in detail.closingIssues"
               :key="issue.id"
-              :href="issue.webUrl"
+              :href="isSafeUrl(issue.webUrl) ? issue.webUrl : undefined"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center gap-1.5 text-sm text-primary hover:underline"
@@ -244,7 +245,7 @@ function openInGitLab() {
             <a
               v-for="rmr in detail.relatedMrs"
               :key="rmr.iid"
-              :href="rmr.webUrl"
+              :href="isSafeUrl(rmr.webUrl) ? rmr.webUrl : undefined"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center gap-1.5 text-sm text-primary hover:underline"
@@ -262,7 +263,7 @@ function openInGitLab() {
             <a
               v-for="dep in detail.dependsOnMrs"
               :key="dep"
-              :href="getDependencyUrl(dep) ?? undefined"
+              :href="isSafeUrl(getDependencyUrl(dep)) ? getDependencyUrl(dep) : undefined"
               :target="getDependencyUrl(dep) ? '_blank' : undefined"
               rel="noopener noreferrer"
             >

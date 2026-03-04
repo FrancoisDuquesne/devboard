@@ -20,8 +20,8 @@ export function resolveMrStatus(mr: GitLabMergeRequest): MrStatus {
 }
 
 function parseDependencies(description: string | null): string[] {
-  if (!description) return [];
-  const pattern = /[Dd]epends\s+on\s+(!?\d+|[\w./-]+!(\d+))/g;
+  if (!description || description.length > 100_000) return [];
+  const pattern = /[Dd]epends\s+on\s+(!?\d+|[\w.\-/]{1,200}!(\d+))/g;
   return Array.from(description.matchAll(pattern), (m) => m[1]);
 }
 

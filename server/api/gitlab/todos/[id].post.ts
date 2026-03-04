@@ -1,4 +1,5 @@
 import { gitlabFetch } from "~~/server/utils/gitlab-client";
+import { errorMessage } from "~~/server/utils/log";
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
       method: "POST",
     });
   } catch (e: unknown) {
-    console.error(`Failed to mark todo ${id} as done:`, e);
+    console.error(`Failed to mark todo ${id} as done: ${errorMessage(e)}`);
     const status =
       e && typeof e === "object" && "statusCode" in e
         ? (e as { statusCode: number }).statusCode

@@ -12,9 +12,7 @@ defineEmits<{
 }>();
 
 function openIssue() {
-  if (props.issue.webUrl) {
-    window.open(props.issue.webUrl, "_blank", "noopener,noreferrer");
-  }
+  safeOpen(props.issue.webUrl);
 }
 </script>
 

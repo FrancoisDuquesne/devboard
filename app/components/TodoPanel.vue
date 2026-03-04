@@ -53,7 +53,7 @@ function onNavigate(todo: DevBoardTodo) {
     emit("select-mr", mr);
     panelOpen.value = false;
   } else {
-    window.open(todo.targetUrl, "_blank", "noopener,noreferrer");
+    safeOpen(todo.targetUrl);
   }
 }
 
