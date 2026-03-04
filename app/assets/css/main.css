@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "@vue-flow/core/dist/style.css";
+
+/* Base transitions for smooth focus/unfocus */
+.vue-flow__node {
+  transition: opacity 0.2s ease;
+}
+
+.vue-flow__edge {
+  transition: opacity 0.2s ease;
+}
+
+/* Suppress Vue Flow's default selected box-shadow */
+.vue-flow__node.selected {
+  box-shadow: none;
+}
+
+/* Node focus: dim non-selected nodes, glow the selected one */
+.has-focus .vue-flow__node {
+  opacity: 0.35;
+}
+
+.has-focus .vue-flow__node.selected {
+  opacity: 1;
+}
+
+/* Dim edges too when a node is focused */
+.has-focus .vue-flow__edge {
+  opacity: 0.25;
+}
