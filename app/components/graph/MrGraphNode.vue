@@ -10,6 +10,7 @@ const props = defineProps<{
 }>();
 
 const { status } = useGitlabAuth();
+const { enabled: worktreeEnabled, worktreeByBranch } = useWorktrees();
 const now = useNow();
 const { copy } = useClipboard();
 const copiedBranch = ref(false);
@@ -129,6 +130,18 @@ function handleClick(event: MouseEvent) {
           icon="i-lucide-at-sign"
           label="Mentioned"
         />
+        <UTooltip
+          v-if="worktreeEnabled && worktreeByBranch.get(data.sourceBranch)"
+          :text="worktreeByBranch.get(data.sourceBranch)!.path"
+        >
+          <UBadge
+            color="info"
+            variant="subtle"
+            size="sm"
+            icon="i-lucide-folder-git-2"
+            label="Local"
+          />
+        </UTooltip>
         <UBadge
           v-if="data.hasConflicts"
           color="error"

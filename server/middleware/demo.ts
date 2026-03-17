@@ -5,6 +5,7 @@ import {
   demoStatus,
   demoTodos,
   getDemoIssueDetail,
+  demoWorktrees,
   getDemoMrDetail,
 } from "../fixtures";
 
@@ -17,6 +18,11 @@ export default defineEventHandler((event) => {
   }
 
   const pathname = getRequestURL(event).pathname;
+
+  // GET /api/worktrees
+  if (pathname === "/api/worktrees") {
+    return demoWorktrees;
+  }
 
   if (!pathname.startsWith("/api/gitlab/")) return;
 

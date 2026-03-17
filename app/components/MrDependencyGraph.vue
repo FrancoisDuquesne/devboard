@@ -44,6 +44,11 @@ const { loading: refreshLoading, fetchMrs } = useGitlab();
 const { helpOpen } = useHelp();
 const { panelOpen, fetchTodos } = useTodos();
 const { totalCount } = useNotifications();
+const {
+  enabled: worktreeEnabled,
+  panelOpen: worktreePanelOpen,
+  worktrees: worktreeList,
+} = useWorktrees();
 
 // Filter and sort MRs before feeding to graph
 const filteredAndSortedMrs = computed(() => {
@@ -299,6 +304,22 @@ const isFiltered = computed(
         class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 px-2 py-1.5 backdrop-blur"
       >
         <SearchPalette />
+
+        <div v-if="worktreeEnabled" class="relative">
+          <UButton
+            icon="i-lucide-folder-git-2"
+            variant="ghost"
+            color="neutral"
+            aria-label="Worktrees"
+            @click="worktreePanelOpen = !worktreePanelOpen"
+          />
+          <span
+            v-if="worktreeList.length > 0"
+            class="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-info text-white text-xs font-bold leading-none pointer-events-none"
+          >
+            {{ worktreeList.length > 9 ? "9+" : worktreeList.length }}
+          </span>
+        </div>
 
         <div class="relative">
           <UButton
