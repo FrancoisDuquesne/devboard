@@ -54,21 +54,14 @@ async function run() {
   // Helper: set localStorage before navigating
   async function navigate(
     page: Awaited<ReturnType<typeof context.newPage>>,
-    opts: { theme: "dark" | "light"; welcomeSeen?: boolean },
+    opts: { theme: "dark" | "light" },
   ) {
     // Navigate first to set origin for localStorage
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
-    await page.evaluate(
-      ({ theme, welcomeSeen }) => {
-        localStorage.setItem("nuxt-color-mode", theme);
-        if (welcomeSeen !== false) {
-          localStorage.setItem("devboard:has-seen-welcome", "true");
-        } else {
-          localStorage.removeItem("devboard:has-seen-welcome");
-        }
-      },
-      { theme: opts.theme, welcomeSeen: opts.welcomeSeen ?? true },
-    );
+    await page.evaluate((theme) => {
+      localStorage.setItem("nuxt-color-mode", theme);
+      localStorage.setItem("devboard:has-seen-welcome", "true");
+    }, opts.theme);
     // Reload to apply localStorage
     await page.goto(BASE, { waitUntil: "networkidle" });
   }
@@ -122,13 +115,7 @@ async function run() {
     await page.waitForTimeout(800);
   });
 
-  // ── Scene 6: Welcome overlay ─────────────────────────────────
-  await screenshot("welcome.png", async (page) => {
-    await navigate(page, { theme: "dark", welcomeSeen: false });
-    await page.waitForTimeout(1500);
-  });
-
-  // ── Scene 7: Help modal ──────────────────────────────────────
+  // ── Scene 6: Help modal ──────────────────────────────────────
   await screenshot("help.png", async (page) => {
     await navigate(page, { theme: "dark" });
     await waitForGraph(page);
