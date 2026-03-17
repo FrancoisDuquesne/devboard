@@ -1,34 +1,57 @@
+<div align="center">
+
+<img src="docs/screenshots/graph-dark.png" alt="DevBoard — interactive dependency graph" width="100%" />
+
 # DevBoard
 
-A real-time GitLab dashboard that visualizes your merge requests, issues, and todos as an interactive dependency graph.
+**A real-time GitLab merge request dashboard with interactive dependency graphs**
 
-Built with Nuxt 4, Vue Flow, and Nuxt UI v4.
+[![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt.js&logoColor=white)](https://nuxt.com)
+[![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-![DevBoard toolbar](image.png)
+</div>
+
+---
 
 ## Features
 
-**Interactive dependency graph** — MRs, issues, and todos rendered as draggable nodes with edges showing dependencies (`Depends on !N`), linked issues (`Closes #N`), and todo targets. Edges are color-coded: green for healthy, red (animated) for blocked, amber (animated) for in-progress, gray dashed for unresolved references.
+### Interactive dependency graph
 
-**MR cards at a glance** — Each node displays title, branch, author/reviewer avatars, pipeline status, approval ratio, unresolved threads, required action, labels, linked issues, and time since last update. A colored left border signals urgency.
+Merge requests, issues, and todos rendered as draggable nodes with color-coded edges showing dependencies, linked issues, and todo targets. Green = healthy, red (animated) = blocked, amber (animated) = in-progress.
 
-**Detail drawer** — Click any MR node to open a slide-over with full details: branches, reviewers, labels, closing issues, related MRs, and dependencies.
+<img src="docs/screenshots/graph-light.png" alt="Graph view — light mode" width="100%" />
 
-**Smart action badges** — DevBoard determines what you need to do next for each MR: review, fix pipeline, rebase, resolve threads, or assign a reviewer.
+### Detail drawer
 
-**Filtering and sorting** — Filter by role (my MRs, to review, mentioned), project, or pipeline status. Sort by updated, created, or title. Toggle node types (MRs, issues, todos) independently.
+Click any MR node to open a slide-over with branches, reviewers, labels, closing issues, related MRs, and dependencies.
 
-**Group by project** — Organize the graph into project-scoped boxes for a high-level view.
+<img src="docs/screenshots/drawer-open.png" alt="MR detail drawer" width="100%" />
 
-**Search palette** — Fuzzy search across all MRs, issues, and todos with `Ctrl+K`.
+### Command palette
 
-**Inbox panel** — A todo/notification panel (`t` to toggle) with tabs for all todos, mentions, and required actions. Mark todos as done individually or in bulk.
+Fuzzy search across all MRs, issues, and todos with `Ctrl+K` / `Cmd+K`.
 
-**Auto-refresh** — Configurable interval (30s to 5min) with toast notifications for new MRs, pipeline failures, recoveries, and incoming todos.
+<img src="docs/screenshots/search-open.png" alt="Search palette" width="100%" />
 
-**Persistent layout** — Dragged node positions are saved to localStorage and restored on reload.
+### Smart inbox
 
-**Dark mode** — Toggle between light and dark themes.
+Todo and notification panel with tabs for all todos, mentions, and required actions. Mark items done individually or in bulk.
+
+<img src="docs/screenshots/todo-panel.png" alt="Todo panel" width="100%" />
+
+### And more
+
+- **Smart action badges** — DevBoard determines what you need to do next: review, fix pipeline, rebase, resolve threads, or assign a reviewer
+- **Filtering and sorting** — Filter by role, project, or pipeline status; sort by updated, created, or title
+- **Group by project** — Organize the graph into project-scoped boxes
+- **Auto-refresh** — Configurable interval (30s–5min) with toast notifications for changes
+- **Persistent layout** — Dragged node positions saved to localStorage
+- **Dark mode** — Toggle between light and dark themes
+
+---
 
 ## Quick start
 
@@ -38,24 +61,23 @@ Built with Nuxt 4, Vue Flow, and Nuxt UI v4.
 - A GitLab instance with API access
 - A GitLab personal access token (PAT) with `api` scope, **or** the [`glab` CLI](https://gitlab.com/gitlab-org/cli) authenticated
 
-### Setup
+### Install
 
 ```bash
-git clone <repo-url> && cd devboard
+git clone https://github.com/your-org/devboard.git && cd devboard
 npm install
 ```
 
-Create a `.env` file (see `.env.example`):
+### Configure
+
+Create a `.env` file:
 
 ```env
-# GitLab host (defaults to gitlab.aerospacelab.be)
 GITLAB_HOST=gitlab.example.com
-
-# GitLab personal access token (falls back to glab CLI config if not set)
 GITLAB_PRIVATE_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
 ```
 
-If you have `glab` configured and your GitLab host matches, no `.env` is needed — DevBoard reads the token from `~/.config/glab-cli/config.yml` automatically.
+Or, if you have `glab` configured, no `.env` is needed — DevBoard reads your token from `~/.config/glab-cli/config.yml` automatically.
 
 ### Run
 
@@ -65,103 +87,96 @@ npm run build     # Production build
 npm run start     # Start production server
 ```
 
+---
+
+## Demo mode
+
+Try DevBoard without a GitLab connection — realistic mock data included:
+
+```bash
+npm run demo
+```
+
+This starts the dev server with pre-built fixtures: 8 MRs across 3 projects with a dependency chain, issues, and todos.
+
+---
+
 ## Keyboard shortcuts
 
 | Key | Action |
 |---|---|
 | `Ctrl+K` / `Cmd+K` | Open search palette |
 | `r` | Refresh all data |
-| `t` | Toggle inbox/todo panel |
+| `t` | Toggle inbox / todo panel |
+| `?` | Show keyboard shortcuts |
 | `Escape` | Close panel or drawer |
-| `Ctrl+click` / `Cmd+click` node | Open in GitLab |
+| `Ctrl+click` / `Cmd+click` node | Open MR in GitLab |
+
+<img src="docs/screenshots/help.png" alt="Keyboard shortcuts modal" width="100%" />
+
+---
+
+## Tech stack
+
+| Technology | Purpose |
+|---|---|
+| [Nuxt 4](https://nuxt.com) | Vue 3 framework with Nitro server |
+| [Nuxt UI v4](https://ui.nuxt.com) | Component library (Reka UI + Tailwind) |
+| [Tailwind CSS v4](https://tailwindcss.com) | Utility-first CSS |
+| [Vue Flow](https://vueflow.dev) | Interactive graph visualization |
+| [Dagre](https://github.com/dagrejs/dagre) | Graph layout algorithm |
+| [VueUse](https://vueuse.org) | Composable utilities |
+| [Biome](https://biomejs.dev) | Linting and formatting |
+
+---
 
 ## Architecture
 
-DevBoard is a Nuxt 4 SPA (SSR disabled). The frontend renders the dashboard; a Nitro server layer proxies GitLab API calls to avoid exposing tokens to the browser.
+DevBoard is a Nuxt 4 SPA (SSR disabled). The frontend renders the dashboard; a Nitro server layer proxies GitLab API calls to keep tokens server-side.
 
 ```
 app/                          # Frontend (Vue 3 + Composition API)
 ├── pages/index.vue           # Full-screen graph dashboard
 ├── components/
-│   ├── graph/                # Graph node components (MR, issue, todo, phantom, group)
+│   ├── graph/                # Graph node components (MR, issue, todo, group)
 │   ├── MrDetailDrawer.vue    # MR detail slide-over
 │   ├── SearchPalette.vue     # Cmd+K fuzzy search
-│   ├── TodoPanel.vue         # Inbox panel (todos + actions)
-│   └── *Badge.vue            # Status, pipeline, approval, threads, action badges
+│   ├── TodoPanel.vue         # Inbox panel
+│   └── *Badge.vue            # Status, pipeline, approval, threads badges
 ├── composables/              # Reactive state and data fetching
 └── types/                    # TypeScript definitions
 
 server/                       # Nitro API proxy
-├── api/gitlab/
-│   ├── mrs.get.ts            # List MRs (authored + reviewing, enriched)
-│   ├── mrs/[projectId]/[iid].get.ts  # Single MR detail
-│   ├── issues.get.ts         # Assigned issues
-│   ├── todos.get.ts          # Pending todos
-│   ├── todos/[id].post.ts    # Mark todo as done
-│   ├── mention-mrs.get.ts    # MRs where user is mentioned
-│   └── status.get.ts         # Connection check
-└── utils/
-    ├── gitlab-client.ts      # Paginated GitLab API client
-    ├── gitlab-auth.ts        # Token resolution (env var → glab CLI)
-    └── normalize.ts          # Response normalization + dependency parsing
+├── api/gitlab/               # 7 API routes
+├── middleware/demo.ts         # Demo mode interceptor
+├── fixtures/                  # Mock data for demo mode
+└── utils/                    # GitLab client, auth, normalization
 ```
-
-### Key composables
-
-| Composable | Purpose |
-|---|---|
-| `useGitlab` | MR fetching, auto-refresh, change detection toasts |
-| `useTodos` | Todo and mention-MR fetching, mark as done |
-| `useIssues` | Assigned issues fetching |
-| `useGitlabAuth` | Connection status (host, username, avatar) |
-| `useMrGraph` | Dagre layout computation for the graph |
-| `useActionStatus` | Derives the required action per MR for the current user |
-| `useNotifications` | Aggregates todos + action items for the inbox badge |
-| `usePreferences` | LocalStorage-backed filters, sort, and settings |
 
 ### Data flow
 
-1. On page load, the frontend fetches MRs, issues, todos, and mention-MRs in parallel via the Nitro API proxy
-2. The server enriches each MR with approvals, unresolved thread count, linked issues, and parsed dependency refs
-3. `useMrGraph` computes a Dagre layout from the enriched data, creating nodes and edges
+1. Frontend fetches MRs, issues, todos, and mention-MRs in parallel via the Nitro proxy
+2. Server enriches each MR with approvals, threads, linked issues, and dependency refs
+3. `useMrGraph` computes a Dagre layout, creating nodes and edges
 4. Vue Flow renders the interactive graph with custom node components
-5. Auto-refresh polls on the configured interval and fires toast notifications on changes
+5. Auto-refresh polls at the configured interval with toast notifications on changes
 
-## Configuration
-
-All user preferences are stored in `localStorage` and persist across sessions:
-
-| Setting | Options | Default |
-|---|---|---|
-| Role filter | All MRs / My MRs / To review / Mentioned | All MRs |
-| Project filter | Per-project | All projects |
-| Pipeline filter | All / Passed / Failed / Running | All |
-| Sort | Updated / Created / Title, asc/desc | Updated, desc |
-| Node types | MRs, Issues, Todos (toggles) | All enabled |
-| Group by | None / Project | None |
-| Auto-refresh | Disabled / 30s / 1min / 2min / 5min | 1 min |
-| Theme | Light / Dark | System |
+---
 
 ## Development
 
 ```bash
-npm run dev          # Start dev server (no fork mode)
+npm run dev          # Start dev server
+npm run demo         # Start with demo data (no GitLab needed)
 npm run build        # Production build
 npm run lint         # Check with Biome
 npm run lint:fix     # Auto-fix lint issues
 npm run format       # Format with Biome
+npm run screenshot   # Capture screenshots (requires demo mode)
 ```
 
-## Tech stack
-
-- [Nuxt 4](https://nuxt.com) — Vue 3 framework
-- [Nuxt UI v4](https://ui.nuxt.com) — Component library (Reka UI + Tailwind CSS)
-- [Tailwind CSS v4](https://tailwindcss.com) — Utility-first CSS
-- [Vue Flow](https://vueflow.dev) — Interactive graph visualization
-- [Dagre](https://github.com/dagrejs/dagre) — Graph layout algorithm
-- [VueUse](https://vueuse.org) — Composable utilities
-- [Biome](https://biomejs.dev) — Linting and formatting
+---
 
 ## License
 
-Private project.
+MIT

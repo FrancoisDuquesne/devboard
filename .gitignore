@@ -27,3 +27,6 @@ Thumbs.db
 
 # Local config
 .devboard-config.json
+
+# Screenshot working directory
+scripts/screenshots/
