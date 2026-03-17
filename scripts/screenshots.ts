@@ -1,5 +1,5 @@
-import { execSync, spawn } from "node:child_process";
-import { cpSync, mkdirSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { cpSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright";
 
@@ -11,7 +11,6 @@ const VIEWPORT = { width: 1440, height: 900 };
 const SETTLE_MS = 2500;
 
 mkdirSync(WORK_DIR, { recursive: true });
-mkdirSync(OUT_DIR, { recursive: true });
 
 // ── Start dev server ─────────────────────────────────────────────
 console.log("Starting dev server on port", PORT);
@@ -20,6 +19,19 @@ const server = spawn("npx", ["nuxt", "dev", "--no-fork", "--port", String(PORT)]
   env: { ...process.env, DEMO_MODE: "true" },
   stdio: ["ignore", "pipe", "pipe"],
   cwd: join(import.meta.dirname, ".."),
+});
+
+function cleanup() {
+  server.kill();
+}
+
+process.on("SIGINT", () => {
+  cleanup();
+  process.exit(130);
+});
+process.on("SIGTERM", () => {
+  cleanup();
+  process.exit(143);
 });
 
 async function waitForServer(url: string, timeout = 60_000): Promise<void> {
@@ -41,91 +53,96 @@ async function run() {
   console.log("Server ready");
 
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: VIEWPORT });
 
-  async function screenshot(name: string, setup: (p: Awaited<ReturnType<typeof context.newPage>>) => Promise<void>) {
-    const page = await context.newPage();
-    await setup(page);
-    await page.screenshot({ path: join(WORK_DIR, name), fullPage: false });
-    console.log(`  ✓ ${name}`);
-    await page.close();
-  }
+  try {
+    const context = await browser.newContext({ viewport: VIEWPORT });
 
-  // Helper: set localStorage before navigating
-  async function navigate(
-    page: Awaited<ReturnType<typeof context.newPage>>,
-    opts: { theme: "dark" | "light" },
-  ) {
-    // Navigate first to set origin for localStorage
-    await page.goto(BASE, { waitUntil: "domcontentloaded" });
-    await page.evaluate((theme) => {
-      localStorage.setItem("nuxt-color-mode", theme);
-      localStorage.setItem("devboard:has-seen-welcome", "true");
-    }, opts.theme);
-    // Reload to apply localStorage
-    await page.goto(BASE, { waitUntil: "networkidle" });
-  }
+    async function screenshot(
+      name: string,
+      setup: (p: Awaited<ReturnType<typeof context.newPage>>) => Promise<void>,
+    ) {
+      const page = await context.newPage();
+      await setup(page);
+      await page.screenshot({ path: join(WORK_DIR, name), fullPage: false });
+      console.log(`  ✓ ${name}`);
+      await page.close();
+    }
 
-  async function waitForGraph(page: Awaited<ReturnType<typeof context.newPage>>) {
-    await page.waitForSelector(".vue-flow__node", { timeout: 15_000 });
-    await page.waitForTimeout(SETTLE_MS);
-  }
+    // Helper: set localStorage before navigating
+    async function navigate(
+      page: Awaited<ReturnType<typeof context.newPage>>,
+      opts: { theme: "dark" | "light" },
+    ) {
+      await page.goto(BASE, { waitUntil: "domcontentloaded" });
+      await page.evaluate((theme) => {
+        localStorage.setItem("nuxt-color-mode", theme);
+        localStorage.setItem("devboard:has-seen-welcome", "true");
+      }, opts.theme);
+      await page.goto(BASE, { waitUntil: "networkidle" });
+    }
 
-  // ── Scene 1: Graph (dark) — hero image ───────────────────────
-  console.log("Capturing scenes...");
+    async function waitForGraph(page: Awaited<ReturnType<typeof context.newPage>>) {
+      await page.waitForSelector(".vue-flow__node", { timeout: 15_000 });
+      await page.waitForTimeout(SETTLE_MS);
+    }
 
-  await screenshot("graph-dark.png", async (page) => {
-    await navigate(page, { theme: "dark" });
-    await waitForGraph(page);
-  });
+    // ── Scene 1: Graph (dark) — hero image ───────────────────────
+    console.log("Capturing scenes...");
 
-  // ── Scene 2: Graph (light) ───────────────────────────────────
-  await screenshot("graph-light.png", async (page) => {
-    await navigate(page, { theme: "light" });
-    await waitForGraph(page);
-  });
+    await screenshot("graph-dark.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+    });
 
-  // ── Scene 3: Detail drawer — click MR !42 node ──────────────
-  await screenshot("drawer-open.png", async (page) => {
-    await navigate(page, { theme: "dark" });
-    await waitForGraph(page);
-    // Find and click the node for MR id=1042 (platform!42)
-    const node = page.locator('[data-id="1042"]');
-    if (await node.count()) {
+    // ── Scene 2: Graph (light) ───────────────────────────────────
+    await screenshot("graph-light.png", async (page) => {
+      await navigate(page, { theme: "light" });
+      await waitForGraph(page);
+    });
+
+    // ── Scene 3: Detail drawer — click MR !42 node ──────────────
+    await screenshot("drawer-open.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+      const node = page.locator('[data-id="1042"]');
+      if (!(await node.count())) {
+        throw new Error("MR node [data-id=\"1042\"] not found — drawer screenshot will be wrong");
+      }
       await node.click();
       await page.waitForTimeout(800);
-    }
-  });
+    });
 
-  // ── Scene 4: Search palette ──────────────────────────────────
-  await screenshot("search-open.png", async (page) => {
-    await navigate(page, { theme: "dark" });
-    await waitForGraph(page);
-    await page.keyboard.press("Control+k");
-    await page.waitForTimeout(500);
-    await page.keyboard.type("graphql", { delay: 80 });
-    await page.waitForTimeout(400);
-  });
+    // ── Scene 4: Search palette ──────────────────────────────────
+    await screenshot("search-open.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+      await page.keyboard.press("Control+k");
+      await page.waitForTimeout(500);
+      await page.keyboard.type("graphql", { delay: 80 });
+      await page.waitForTimeout(400);
+    });
 
-  // ── Scene 5: Todo panel ──────────────────────────────────────
-  await screenshot("todo-panel.png", async (page) => {
-    await navigate(page, { theme: "dark" });
-    await waitForGraph(page);
-    await page.keyboard.press("t");
-    await page.waitForTimeout(800);
-  });
+    // ── Scene 5: Todo panel ──────────────────────────────────────
+    await screenshot("todo-panel.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+      await page.keyboard.press("t");
+      await page.waitForTimeout(800);
+    });
 
-  // ── Scene 6: Help modal ──────────────────────────────────────
-  await screenshot("help.png", async (page) => {
-    await navigate(page, { theme: "dark" });
-    await waitForGraph(page);
-    await page.keyboard.press("?");
-    await page.waitForTimeout(600);
-  });
+    // ── Scene 6: Help modal ──────────────────────────────────────
+    await screenshot("help.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+      await page.keyboard.press("?");
+      await page.waitForTimeout(600);
+    });
+  } finally {
+    await browser.close();
+  }
 
-  await browser.close();
-
-  // Copy to docs/screenshots/
+  // Clean output dir and copy fresh screenshots
+  rmSync(OUT_DIR, { recursive: true, force: true });
   cpSync(WORK_DIR, OUT_DIR, { recursive: true });
   console.log(`\nAll screenshots saved to ${OUT_DIR}`);
 }
@@ -136,5 +153,5 @@ run()
     process.exitCode = 1;
   })
   .finally(() => {
-    server.kill();
+    cleanup();
   });

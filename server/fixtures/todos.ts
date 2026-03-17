@@ -1,7 +1,7 @@
 import type { DevBoardTodo } from "~/types";
+import { DEMO_USERS, demoUrl } from "./constants";
 
-const avatar = (seed: string) =>
-  `https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=${seed}`;
+const U = DEMO_USERS;
 
 export const demoTodos: DevBoardTodo[] = [
   {
@@ -10,14 +10,10 @@ export const demoTodos: DevBoardTodo[] = [
     targetType: "MergeRequest",
     target: { id: 1087, iid: 87, title: "Real-time notification bell component" },
     body: "Mika Johansson requested your review on !87",
-    author: {
-      username: "mika.ui",
-      name: "Mika Johansson",
-      avatarUrl: avatar("mika.ui"),
-    },
+    author: U.mika,
     projectPath: "acme/frontend",
     projectName: "frontend",
-    targetUrl: "https://gitlab.example.com/acme/frontend/-/merge_requests/87",
+    targetUrl: demoUrl("acme/frontend", "merge_requests/87"),
     createdAt: "2026-03-17T07:45:00.000Z",
   },
   {
@@ -26,14 +22,10 @@ export const demoTodos: DevBoardTodo[] = [
     targetType: "MergeRequest",
     target: { id: 1009, iid: 9, title: "Terraform module for Redis cluster" },
     body: "@alex.dev could you review the sentinel config?",
-    author: {
-      username: "priya.ops",
-      name: "Priya Sharma",
-      avatarUrl: avatar("priya.ops"),
-    },
+    author: U.priya,
     projectPath: "acme/infra",
     projectName: "infra",
-    targetUrl: "https://gitlab.example.com/acme/infra/-/merge_requests/9",
+    targetUrl: demoUrl("acme/infra", "merge_requests/9"),
     createdAt: "2026-03-16T11:20:00.000Z",
   },
   {
@@ -46,14 +38,10 @@ export const demoTodos: DevBoardTodo[] = [
       title: "Add rate limiting to public API endpoints",
     },
     body: "Pipeline failed for !39",
-    author: {
-      username: "alex.dev",
-      name: "Alex Chen",
-      avatarUrl: avatar("alex.dev"),
-    },
+    author: U.alex,
     projectPath: "acme/platform",
     projectName: "platform",
-    targetUrl: "https://gitlab.example.com/acme/platform/-/merge_requests/39",
+    targetUrl: demoUrl("acme/platform", "merge_requests/39"),
     createdAt: "2026-03-16T22:05:00.000Z",
   },
   {
@@ -66,14 +54,10 @@ export const demoTodos: DevBoardTodo[] = [
       title: "Implement GraphQL subscriptions API",
     },
     body: "Sam Nakamura approved, waiting for one more approval on !42",
-    author: {
-      username: "sam.backend",
-      name: "Sam Nakamura",
-      avatarUrl: avatar("sam.backend"),
-    },
+    author: U.sam,
     projectPath: "acme/platform",
     projectName: "platform",
-    targetUrl: "https://gitlab.example.com/acme/platform/-/merge_requests/42",
+    targetUrl: demoUrl("acme/platform", "merge_requests/42"),
     createdAt: "2026-03-16T09:00:00.000Z",
   },
   {
@@ -82,14 +66,10 @@ export const demoTodos: DevBoardTodo[] = [
     targetType: "Issue",
     target: { id: 3021, iid: 21, title: "Add real-time event streaming" },
     body: "@alex.dev this is ready for your final review before close",
-    author: {
-      username: "sam.backend",
-      name: "Sam Nakamura",
-      avatarUrl: avatar("sam.backend"),
-    },
+    author: U.sam,
     projectPath: "acme/platform",
     projectName: "platform",
-    targetUrl: "https://gitlab.example.com/acme/platform/-/issues/21",
+    targetUrl: demoUrl("acme/platform", "issues/21"),
     createdAt: "2026-03-15T16:30:00.000Z",
   },
 ];

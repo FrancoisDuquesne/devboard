@@ -1,7 +1,7 @@
 import type { DevBoardMR } from "~/types";
+import { DEMO_USERS, demoUrl } from "./constants";
 
-const avatar = (seed: string) =>
-  `https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=${seed}`;
+const U = DEMO_USERS;
 
 export const demoMentionMrs: DevBoardMR[] = [
   {
@@ -13,27 +13,14 @@ export const demoMentionMrs: DevBoardMR[] = [
     description:
       "Provisions a 3-node Redis Sentinel cluster with automatic failover.\n\n/cc @alex.dev for review on the sentinel config",
     status: "open",
-    webUrl: "https://gitlab.example.com/acme/infra/-/merge_requests/9",
+    webUrl: demoUrl("acme/infra", "merge_requests/9"),
     sourceBranch: "infra/redis-cluster",
     targetBranch: "main",
-    author: {
-      username: "priya.ops",
-      name: "Priya Sharma",
-      avatarUrl: avatar("priya.ops"),
-    },
-    reviewers: [
-      {
-        username: "alex.dev",
-        name: "Alex Chen",
-        avatarUrl: avatar("alex.dev"),
-      },
-    ],
+    author: U.priya,
+    reviewers: [U.alex],
     labels: ["infrastructure", "workflow::in-review"],
     hasConflicts: false,
-    pipeline: {
-      status: "success",
-      webUrl: "https://gitlab.example.com/acme/infra/-/pipelines/9010",
-    },
+    pipeline: { status: "success", webUrl: demoUrl("acme/infra", "pipelines/9010") },
     unresolvedThreads: 0,
     approvals: { approved: 1, required: 1, approvedByUsernames: ["alex.dev"] },
     linkedIssues: [],
@@ -51,27 +38,14 @@ export const demoMentionMrs: DevBoardMR[] = [
     description:
       "Pre-built dashboards for API latency, error rates, and pod scaling.\n\n@alex.dev FYI — includes alerts for the subscription pods",
     status: "open",
-    webUrl: "https://gitlab.example.com/acme/infra/-/merge_requests/12",
+    webUrl: demoUrl("acme/infra", "merge_requests/12"),
     sourceBranch: "infra/datadog-dashboards",
     targetBranch: "main",
-    author: {
-      username: "jordan.sre",
-      name: "Jordan Rivera",
-      avatarUrl: avatar("jordan.sre"),
-    },
-    reviewers: [
-      {
-        username: "priya.ops",
-        name: "Priya Sharma",
-        avatarUrl: avatar("priya.ops"),
-      },
-    ],
+    author: U.jordan,
+    reviewers: [U.priya],
     labels: ["infrastructure", "monitoring"],
     hasConflicts: false,
-    pipeline: {
-      status: "success",
-      webUrl: "https://gitlab.example.com/acme/infra/-/pipelines/9015",
-    },
+    pipeline: { status: "success", webUrl: demoUrl("acme/infra", "pipelines/9015") },
     unresolvedThreads: 0,
     approvals: { approved: 1, required: 1, approvedByUsernames: ["priya.ops"] },
     linkedIssues: [],

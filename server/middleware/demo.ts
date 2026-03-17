@@ -10,22 +10,27 @@ import {
 export default defineEventHandler((event) => {
   if (!process.env.DEMO_MODE) return;
 
-  const path = event.path;
+  if (process.env.NODE_ENV === "production") {
+    console.error("DEMO_MODE must not be enabled in production — ignoring");
+    return;
+  }
 
-  if (!path.startsWith("/api/gitlab/")) return;
+  const pathname = getRequestURL(event).pathname;
+
+  if (!pathname.startsWith("/api/gitlab/")) return;
 
   // GET /api/gitlab/status
-  if (path === "/api/gitlab/status") {
+  if (pathname === "/api/gitlab/status") {
     return demoStatus;
   }
 
   // GET /api/gitlab/mrs (exact match, not sub-routes)
-  if (path === "/api/gitlab/mrs") {
+  if (pathname === "/api/gitlab/mrs") {
     return demoMrs;
   }
 
   // GET /api/gitlab/mrs/:projectId/:iid
-  const mrDetailMatch = path.match(/^\/api\/gitlab\/mrs\/(\d+)\/(\d+)$/);
+  const mrDetailMatch = pathname.match(/^\/api\/gitlab\/mrs\/(\d+)\/(\d+)$/);
   if (mrDetailMatch) {
     const projectId = Number(mrDetailMatch[1]);
     const iid = Number(mrDetailMatch[2]);
@@ -35,21 +40,26 @@ export default defineEventHandler((event) => {
   }
 
   // GET /api/gitlab/issues
-  if (path === "/api/gitlab/issues") {
+  if (pathname === "/api/gitlab/issues") {
     return demoIssues;
   }
 
   // GET /api/gitlab/todos or POST /api/gitlab/todos/:id
-  if (path === "/api/gitlab/todos") {
+  if (pathname === "/api/gitlab/todos") {
     return demoTodos;
   }
-  const todoMarkMatch = path.match(/^\/api\/gitlab\/todos\/\d+$/);
-  if (todoMarkMatch) {
+  if (/^\/api\/gitlab\/todos\/\d+$/.test(pathname)) {
     return { success: true };
   }
 
   // GET /api/gitlab/mention-mrs
-  if (path === "/api/gitlab/mention-mrs") {
+  if (pathname === "/api/gitlab/mention-mrs") {
     return demoMentionMrs;
   }
+
+  // Catch-all: block unhandled /api/gitlab/ routes in demo mode
+  throw createError({
+    statusCode: 501,
+    statusMessage: "Not available in demo mode",
+  });
 });

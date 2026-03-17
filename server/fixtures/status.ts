@@ -1,7 +1,18 @@
-export const demoStatus = {
+import { DEMO_GITLAB_HOST, DEMO_USERS } from "./constants";
+
+export interface ConnectionStatus {
+  connected: boolean;
+  host: string;
+  username?: string;
+  name?: string;
+  avatarUrl?: string;
+  error?: string;
+}
+
+export const demoStatus: ConnectionStatus = {
   connected: true,
-  host: "gitlab.example.com",
-  username: "alex.dev",
-  name: "Alex Chen",
-  avatarUrl: "https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=alex.dev",
+  host: DEMO_GITLAB_HOST,
+  username: DEMO_USERS.alex.username,
+  name: DEMO_USERS.alex.name,
+  avatarUrl: DEMO_USERS.alex.avatarUrl,
 };

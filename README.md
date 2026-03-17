@@ -64,7 +64,7 @@ Todo and notification panel with tabs for all todos, mentions, and required acti
 ### Install
 
 ```bash
-git clone https://github.com/your-org/devboard.git && cd devboard
+git clone https://github.com/FrancoisDuquesne/devboard.git && cd devboard
 npm install
 ```
 

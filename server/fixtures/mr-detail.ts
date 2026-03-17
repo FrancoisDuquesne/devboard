@@ -1,4 +1,6 @@
 import type { DevBoardMRDetail } from "~/types";
+import { demoUrl } from "./constants";
+import { demoMentionMrs } from "./mention-mrs";
 import { demoMrs } from "./mrs";
 
 const detailExtras: Record<
@@ -16,7 +18,7 @@ const detailExtras: Record<
         iid: 8,
         title: "Provision subscription worker pods",
         state: "opened",
-        webUrl: "https://gitlab.example.com/acme/infra/-/issues/8",
+        webUrl: demoUrl("acme/infra", "issues/8"),
         reference: "acme/infra#8",
         projectId: 103,
         projectPath: "acme/infra",
@@ -28,7 +30,7 @@ const detailExtras: Record<
         iid: 42,
         title: "Implement GraphQL subscriptions API",
         status: "open",
-        webUrl: "https://gitlab.example.com/acme/platform/-/merge_requests/42",
+        webUrl: demoUrl("acme/platform", "merge_requests/42"),
         reference: "acme/platform!42",
       },
     ],
@@ -42,7 +44,7 @@ const detailExtras: Record<
         iid: 21,
         title: "Add real-time event streaming",
         state: "opened",
-        webUrl: "https://gitlab.example.com/acme/platform/-/issues/21",
+        webUrl: demoUrl("acme/platform", "issues/21"),
         reference: "acme/platform#21",
         projectId: 101,
         projectPath: "acme/platform",
@@ -54,21 +56,21 @@ const detailExtras: Record<
         iid: 14,
         title: "Update K8s manifests for subscription pods",
         status: "open",
-        webUrl: "https://gitlab.example.com/acme/infra/-/merge_requests/14",
+        webUrl: demoUrl("acme/infra", "merge_requests/14"),
         reference: "acme/infra!14",
       },
       {
         iid: 87,
         title: "Real-time notification bell component",
         status: "open",
-        webUrl: "https://gitlab.example.com/acme/frontend/-/merge_requests/87",
+        webUrl: demoUrl("acme/frontend", "merge_requests/87"),
         reference: "acme/frontend!87",
       },
       {
         iid: 43,
         title: "WebSocket auth middleware",
         status: "draft",
-        webUrl: "https://gitlab.example.com/acme/platform/-/merge_requests/43",
+        webUrl: demoUrl("acme/platform", "merge_requests/43"),
         reference: "acme/platform!43",
       },
     ],
@@ -82,7 +84,7 @@ const detailExtras: Record<
         iid: 55,
         title: "Build notification bell UI",
         state: "opened",
-        webUrl: "https://gitlab.example.com/acme/frontend/-/issues/55",
+        webUrl: demoUrl("acme/frontend", "issues/55"),
         reference: "acme/frontend#55",
         projectId: 102,
         projectPath: "acme/frontend",
@@ -94,7 +96,7 @@ const detailExtras: Record<
         iid: 42,
         title: "Implement GraphQL subscriptions API",
         status: "open",
-        webUrl: "https://gitlab.example.com/acme/platform/-/merge_requests/42",
+        webUrl: demoUrl("acme/platform", "merge_requests/42"),
         reference: "acme/platform!42",
       },
     ],
@@ -108,42 +110,34 @@ const detailExtras: Record<
         iid: 42,
         title: "Implement GraphQL subscriptions API",
         status: "open",
-        webUrl: "https://gitlab.example.com/acme/platform/-/merge_requests/42",
+        webUrl: demoUrl("acme/platform", "merge_requests/42"),
         reference: "acme/platform!42",
       },
     ],
   },
 
   // acme/platform!38
-  1038: {
-    closingIssues: [],
-    relatedMrs: [],
-  },
+  1038: { closingIssues: [], relatedMrs: [] },
 
   // acme/frontend!91
-  1091: {
-    closingIssues: [],
-    relatedMrs: [],
-  },
+  1091: { closingIssues: [], relatedMrs: [] },
 
   // acme/platform!39
-  1039: {
-    closingIssues: [],
-    relatedMrs: [],
-  },
+  1039: { closingIssues: [], relatedMrs: [] },
 
   // acme/infra!9
-  1009: {
-    closingIssues: [],
-    relatedMrs: [],
-  },
+  1009: { closingIssues: [], relatedMrs: [] },
+
+  // acme/infra!12 (mention-only MR)
+  1112: { closingIssues: [], relatedMrs: [] },
 };
 
 export function getDemoMrDetail(
   projectId: number,
   iid: number,
 ): DevBoardMRDetail | null {
-  const mr = demoMrs.find((m) => m.projectId === projectId && m.iid === iid);
+  const allMrs = [...demoMrs, ...demoMentionMrs];
+  const mr = allMrs.find((m) => m.projectId === projectId && m.iid === iid);
   if (!mr) return null;
 
   const extras = detailExtras[mr.id] ?? {

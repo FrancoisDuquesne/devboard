@@ -1,4 +1,5 @@
 import type { DevBoardIssue } from "~/types";
+import { demoUrl } from "./constants";
 
 export const demoIssues: DevBoardIssue[] = [
   {
@@ -6,7 +7,7 @@ export const demoIssues: DevBoardIssue[] = [
     iid: 21,
     title: "Add real-time event streaming",
     state: "opened",
-    webUrl: "https://gitlab.example.com/acme/platform/-/issues/21",
+    webUrl: demoUrl("acme/platform", "issues/21"),
     reference: "acme/platform#21",
     projectId: 101,
     projectPath: "acme/platform",
@@ -18,7 +19,7 @@ export const demoIssues: DevBoardIssue[] = [
     iid: 55,
     title: "Build notification bell UI",
     state: "opened",
-    webUrl: "https://gitlab.example.com/acme/frontend/-/issues/55",
+    webUrl: demoUrl("acme/frontend", "issues/55"),
     reference: "acme/frontend#55",
     projectId: 102,
     projectPath: "acme/frontend",
@@ -30,7 +31,7 @@ export const demoIssues: DevBoardIssue[] = [
     iid: 8,
     title: "Provision subscription worker pods",
     state: "opened",
-    webUrl: "https://gitlab.example.com/acme/infra/-/issues/8",
+    webUrl: demoUrl("acme/infra", "issues/8"),
     reference: "acme/infra#8",
     projectId: 103,
     projectPath: "acme/infra",

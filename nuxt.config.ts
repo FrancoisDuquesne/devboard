@@ -30,6 +30,12 @@ export default defineNuxtConfig({
         "Content-Security-Policy":
           "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.iconify.design; font-src 'self' data:",
         "Cross-Origin-Resource-Policy": "same-origin",
+        "Cross-Origin-Opener-Policy": "same-origin",
+      },
+    },
+    "/api/**": {
+      headers: {
+        "Cache-Control": "no-store",
       },
     },
   },
