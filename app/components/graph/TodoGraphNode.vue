@@ -21,7 +21,7 @@ const targetIssue = computed<DevBoardIssue | null>(() => {
     id: props.data.target.id,
     iid: props.data.target.iid,
     title: props.data.target.title,
-    state: "opened",
+    state: props.data.targetState === "closed" ? "closed" : "opened",
     webUrl: props.data.targetUrl,
     reference: `#${props.data.target.iid}`,
     projectId: 0,
@@ -48,13 +48,29 @@ function openTarget(event: MouseEvent) {
         <span class="truncate text-xs text-dimmed">
           {{ todoActionConfig[data.action]?.label ?? data.action }}
         </span>
+        <UBadge
+          v-if="data.targetState === 'merged'"
+          color="success"
+          variant="subtle"
+          size="xs"
+          label="Merged"
+          class="ml-auto shrink-0"
+        />
+        <UBadge
+          v-else-if="data.targetState === 'closed'"
+          color="info"
+          variant="subtle"
+          size="xs"
+          label="Closed"
+          class="ml-auto shrink-0"
+        />
         <UButton
           icon="i-lucide-check"
           variant="ghost"
           color="neutral"
           size="xs"
           aria-label="Mark as done"
-          class="ml-auto shrink-0"
+          :class="data.targetState === 'open' ? 'ml-auto shrink-0' : 'shrink-0'"
           @click.stop="markAsDone(data.id)"
         />
       </div>

@@ -88,11 +88,14 @@ export type TodoAction =
   | "unmergeable"
   | "review_requested";
 
+export type TodoTargetState = "open" | "merged" | "closed";
+
 export interface DevBoardTodo {
   id: number;
   action: TodoAction;
   targetType: string;
   target: { id: number; iid: number; title: string };
+  targetState: TodoTargetState;
   body: string;
   author: { username: string; name: string; avatarUrl: string };
   projectPath: string;

@@ -100,7 +100,7 @@ export interface GitLabTodo {
   state: "pending" | "done";
   action_name: string;
   target_type: string;
-  target: { id: number; iid: number; title: string };
+  target: { id: number; iid: number; title: string; state: string };
   body: string;
   author: GitLabUser;
   project: { id: number; name: string; path_with_namespace: string };

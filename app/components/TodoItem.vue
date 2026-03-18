@@ -60,6 +60,20 @@ const isMention = computed(
         >
         <span>&middot;</span>
         <span>{{ timeAgo(todo.createdAt, now) }}</span>
+        <UBadge
+          v-if="todo.targetState === 'merged'"
+          color="success"
+          variant="subtle"
+          size="xs"
+          label="Merged"
+        />
+        <UBadge
+          v-else-if="todo.targetState === 'closed'"
+          color="info"
+          variant="subtle"
+          size="xs"
+          label="Closed"
+        />
       </div>
     </div>
 

@@ -104,12 +104,22 @@ export function normalizeMr(
   };
 }
 
+function resolveTargetState(
+  targetType: string,
+  state: string,
+): "open" | "merged" | "closed" {
+  if (targetType === "MergeRequest" && state === "merged") return "merged";
+  if (state === "closed") return "closed";
+  return "open";
+}
+
 export function normalizeTodo(todo: GitLabTodo): DevBoardTodo {
   return {
     id: todo.id,
     action: todo.action_name as TodoAction,
     targetType: todo.target_type,
     target: todo.target,
+    targetState: resolveTargetState(todo.target_type, todo.target.state),
     body: todo.body,
     author: {
       username: todo.author.username,
