@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { status, loading: connectionLoading, checkConnection } = useGitlabAuth();
 const { autoRefreshInterval } = usePreferences();
-const { enabled: worktreesEnabled } = useWorktrees();
+const { enabled: worktreesEnabled, configured, scanDirs } = useWorktrees();
 const { helpOpen } = useHelp();
 const { resetWelcome } = useOnboarding();
 const colorMode = useColorMode();
@@ -87,7 +87,26 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
               aria-label="Enable worktrees"
             />
           </div>
-          <WorktreeScanDirsConfig v-if="worktreesEnabled" />
+          <template v-if="worktreesEnabled">
+            <div v-if="configured" class="flex flex-wrap gap-1">
+              <UBadge
+                v-for="dir in scanDirs"
+                :key="dir"
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                icon="i-lucide-folder"
+                :label="dir"
+              />
+            </div>
+            <p v-else class="text-xs text-dimmed">
+              Set
+              <code class="rounded bg-muted px-1 py-0.5">WORKTREE_SCAN_DIRS</code>
+              in your
+              <code class="rounded bg-muted px-1 py-0.5">.env</code>
+              to scan for git worktrees, then restart the dev server.
+            </p>
+          </template>
         </div>
 
         <USeparator />

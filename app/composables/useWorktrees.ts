@@ -1,11 +1,10 @@
 import { useLocalStorage } from "@vueuse/core";
-import type { ScanDirsConfigResponse, Worktree, WorktreeResponse } from "~/types";
+import type { Worktree, WorktreeResponse } from "~/types";
 import { usePreferences } from "./usePreferences";
 
 const worktrees = ref<Worktree[]>([]);
 const configured = ref(false);
 const scanDirs = ref<string[]>([]);
-const configLocked = ref(false);
 const enabled = useLocalStorage("devboard:worktrees-enabled", false);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -45,34 +44,12 @@ export function useWorktrees() {
       });
       configured.value = response.configured;
       scanDirs.value = response.scanDirs;
-      configLocked.value = response.locked;
       worktrees.value = response.worktrees;
     } catch (e) {
       if (signal.aborted) return;
       error.value = e instanceof Error ? e.message : "Failed to fetch worktrees";
     } finally {
       if (!signal.aborted) loading.value = false;
-    }
-  }
-
-  async function fetchScanDirsConfig(): Promise<ScanDirsConfigResponse | null> {
-    try {
-      return await $fetch<ScanDirsConfigResponse>("/api/worktrees/scan-dirs");
-    } catch {
-      return null;
-    }
-  }
-
-  async function saveScanDirs(dirs: string[]): Promise<boolean> {
-    try {
-      await $fetch("/api/worktrees/scan-dirs", {
-        method: "PUT",
-        body: { scanDirs: dirs },
-      });
-      await fetchWorktrees();
-      return true;
-    } catch {
-      return false;
     }
   }
 
@@ -117,7 +94,6 @@ export function useWorktrees() {
     worktrees,
     configured,
     scanDirs,
-    configLocked,
     enabled,
     loading,
     error,
@@ -125,8 +101,6 @@ export function useWorktrees() {
     worktreeByBranch,
     worktreesByRepo,
     fetchWorktrees,
-    fetchScanDirsConfig,
-    saveScanDirs,
     startAutoRefresh,
     stopAutoRefresh,
   };

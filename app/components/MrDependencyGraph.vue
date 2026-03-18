@@ -56,6 +56,8 @@ const visibleWorktreeCount = computed(
       .length,
 );
 
+const legendCollapsed = ref(false);
+
 // Filter and sort MRs before feeding to graph
 const filteredAndSortedMrs = computed(() => {
   let result = [...props.mrs];
@@ -289,12 +291,14 @@ const isFiltered = computed(
             aria-label="Worktrees"
             @click="worktreePanelOpen = !worktreePanelOpen"
           />
-          <span
+          <UBadge
             v-if="visibleWorktreeCount > 0"
-            class="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-info text-white text-xs font-bold leading-none pointer-events-none"
-          >
-            {{ visibleWorktreeCount > 9 ? "9+" : visibleWorktreeCount }}
-          </span>
+            :label="visibleWorktreeCount > 9 ? '9+' : String(visibleWorktreeCount)"
+            color="info"
+            variant="solid"
+            size="sm"
+            class="absolute -top-1 -right-1 pointer-events-none"
+          />
         </div>
 
         <div class="relative">
@@ -521,69 +525,94 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
 
       <Panel position="bottom-left">
         <div
-          class="flex flex-col gap-y-1 rounded-lg border border-muted bg-default/90 px-3 py-1.5 text-xs text-dimmed backdrop-blur shadow-lg"
+          class="group/legend flex flex-col rounded-lg border border-muted bg-default/90 text-xs text-dimmed backdrop-blur shadow-lg"
         >
-          <template v-if="hasEdges">
-            <span class="font-medium">Edges:</span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-0.5 w-4 bg-emerald-500" /> Healthy
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-0.5 w-4 bg-red-500" /> Blocked
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-0.5 w-4 bg-amber-500" /> In progress
-            </span>
-            <span class="flex items-center gap-1">
-              <span
-                class="inline-block h-0.5 w-4 border-t-2 border-dashed border-gray-400"
-              />
-              Unresolved
-            </span>
-            <span class="my-1 w-full border-b border-accented" />
-          </template>
-          <span class="font-medium">Nodes:</span>
-          <span v-if="showMrs" class="flex items-center gap-1">
-            <UIcon name="i-lucide-git-pull-request" class="size-3 text-primary" />
-            Merge request
-          </span>
-          <span v-if="showIssues" class="flex items-center gap-1">
-            <UIcon name="i-lucide-circle-dot" class="size-3 text-primary" />
-            Issue
-          </span>
-          <span v-if="showTodos" class="flex items-center gap-1">
-            <UIcon name="i-lucide-list-todo" class="size-3 text-primary" />
-            Todo
-          </span>
-          <template v-if="showMrs">
-            <span class="my-1 w-full border-b border-accented" />
-            <span class="font-medium">MR status:</span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-primary" /> On track
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-warning" /> Needs
-              attention
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-error" /> Action needed
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-success" /> Merged
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-info" /> Mentioned
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-dimmed" /> Draft
-            </span>
-          </template>
-          <UTooltip
-            v-if="!hasEdges && !isFiltered"
-            text="Add &quot;Depends on !N&quot; in MR descriptions to see dependency edges."
+          <!-- Collapsible content (expands upward above the header) -->
+          <div
+            class="grid transition-[grid-template-rows] duration-200"
+            :class="legendCollapsed ? 'grid-rows-[0fr] group-hover/legend:grid-rows-[1fr]' : 'grid-rows-[1fr]'"
           >
-            <UIcon name="i-lucide-info" class="mt-1 size-3.5 cursor-help text-dimmed" />
-          </UTooltip>
+            <div class="overflow-hidden">
+              <div class="flex flex-col gap-y-1 px-3 pt-1.5">
+                <template v-if="hasEdges">
+                  <span class="font-medium">Edges:</span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-0.5 w-4 bg-emerald-500" /> Healthy
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-0.5 w-4 bg-red-500" /> Blocked
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-0.5 w-4 bg-amber-500" /> In progress
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span
+                      class="inline-block h-0.5 w-4 border-t-2 border-dashed border-gray-400"
+                    />
+                    Unresolved
+                  </span>
+                  <span class="my-1 w-full border-b border-accented" />
+                </template>
+                <span class="font-medium">Nodes:</span>
+                <span v-if="showMrs" class="flex items-center gap-1">
+                  <UIcon name="i-lucide-git-pull-request" class="size-3 text-primary" />
+                  Merge request
+                </span>
+                <span v-if="showIssues" class="flex items-center gap-1">
+                  <UIcon name="i-lucide-circle-dot" class="size-3 text-primary" />
+                  Issue
+                </span>
+                <span v-if="showTodos" class="flex items-center gap-1">
+                  <UIcon name="i-lucide-list-todo" class="size-3 text-primary" />
+                  Todo
+                </span>
+                <template v-if="showMrs">
+                  <span class="my-1 w-full border-b border-accented" />
+                  <span class="font-medium">MR status:</span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-primary" /> On
+                    track
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-warning" /> Needs
+                    attention
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-error" /> Action
+                    needed
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-success" /> Merged
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-info" /> Mentioned
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-dimmed" /> Draft
+                  </span>
+                </template>
+                <UTooltip
+                  v-if="!hasEdges && !isFiltered"
+                  text="Add &quot;Depends on !N&quot; in MR descriptions to see dependency edges."
+                >
+                  <UIcon
+                    name="i-lucide-info"
+                    class="mt-1 size-3.5 cursor-help text-dimmed"
+                  />
+                </UTooltip>
+              </div>
+            </div>
+          </div>
+          <!-- Header (always at the bottom, never moves) -->
+          <UButton
+            label="Legend"
+            :trailing-icon="legendCollapsed ? 'i-lucide-chevrons-up-down' : 'i-lucide-chevrons-down-up'"
+            variant="link"
+            color="neutral"
+            size="sm"
+            block
+            @click="legendCollapsed = !legendCollapsed"
+          />
         </div>
       </Panel>
     </VueFlow>

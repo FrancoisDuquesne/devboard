@@ -69,11 +69,6 @@ const visibleWorktreeCount = computed(() => {
   return count;
 });
 
-function getMrForBranch(branch: string | null): DevBoardMR | undefined {
-  if (!branch) return undefined;
-  return branchMrMap.value.get(branch);
-}
-
 function onNavigateMr(mr: DevBoardMR) {
   emit("select-mr", mr);
   panelOpen.value = false;
@@ -142,9 +137,9 @@ function onNavigateMr(mr: DevBoardMR) {
                   />
                   <template v-if="wt.branch">
                     <button
-                      v-if="getMrForBranch(wt.branch)"
+                      v-if="wt.branch && branchMrMap.get(wt.branch)"
                       class="min-w-0 truncate text-sm font-medium text-primary hover:underline text-left"
-                      @click="onNavigateMr(getMrForBranch(wt.branch)!)"
+                      @click="onNavigateMr(branchMrMap.get(wt.branch!)!)"
                     >
                       {{ wt.branch }}
                     </button>
@@ -161,11 +156,11 @@ function onNavigateMr(mr: DevBoardMR) {
                     label="Main"
                   />
                   <div
-                    v-if="wt.branch && getMrForBranch(wt.branch)"
+                    v-if="wt.branch && branchMrMap.get(wt.branch)"
                     class="ml-auto flex items-center gap-0.5"
                   >
                     <UButton
-                      :to="getMrForBranch(wt.branch)!.webUrl"
+                      :to="branchMrMap.get(wt.branch!)!.webUrl"
                       target="_blank"
                       icon="i-lucide-git-pull-request"
                       color="neutral"
@@ -174,8 +169,8 @@ function onNavigateMr(mr: DevBoardMR) {
                       aria-label="Open merge request"
                     />
                     <UButton
-                      v-if="getMrForBranch(wt.branch)!.linkedIssues.length > 0"
-                      :to="getMrForBranch(wt.branch)!.linkedIssues[0].webUrl"
+                      v-if="branchMrMap.get(wt.branch!)!.linkedIssues.length > 0"
+                      :to="branchMrMap.get(wt.branch!)!.linkedIssues[0].webUrl"
                       target="_blank"
                       icon="i-lucide-circle-dot"
                       color="neutral"

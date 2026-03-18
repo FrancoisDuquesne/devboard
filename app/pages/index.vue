@@ -81,12 +81,12 @@ const allProjects = computed(() => {
   return [...paths].sort();
 });
 
-onMounted(async () => {
+onMounted(() => {
   fetchMrs();
   fetchTodos();
   fetchMentionMrs();
   fetchIssues();
-  await fetchWorktrees();
+  fetchWorktrees();
   startAutoRefresh();
   startTodosRefresh();
   startIssuesRefresh();

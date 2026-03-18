@@ -137,20 +137,7 @@ export interface Worktree {
 export interface WorktreeResponse {
   configured: boolean;
   scanDirs: string[];
-  locked: boolean;
   worktrees: Worktree[];
-}
-
-export interface ScanDirSuggestion {
-  path: string;
-  label: string;
-}
-
-export interface ScanDirsConfigResponse {
-  source: "env" | "config";
-  scanDirs: string[];
-  locked: boolean;
-  suggestions: ScanDirSuggestion[];
 }
 
 export interface DevBoardMRDetail extends DevBoardMR {

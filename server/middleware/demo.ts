@@ -20,23 +20,8 @@ export default defineEventHandler((event) => {
   const pathname = getRequestURL(event).pathname;
 
   // GET /api/worktrees
-  // GET /api/worktrees
   if (pathname === "/api/worktrees") {
     return demoWorktrees;
-  }
-
-  // GET /api/worktrees/scan-dirs
-  if (pathname === "/api/worktrees/scan-dirs") {
-    return {
-      source: "config",
-      scanDirs: demoWorktrees.scanDirs,
-      locked: false,
-      suggestions: [
-        { path: "/home/user/repos", label: "~/repos" },
-        { path: "/home/user/projects", label: "~/projects" },
-        { path: "/home/user/work", label: "~/work" },
-      ],
-    };
   }
 
   if (!pathname.startsWith("/api/gitlab/")) return;

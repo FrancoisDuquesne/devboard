@@ -33,6 +33,11 @@ function copyToClipboard(value: string, field: string) {
   }, COPY_FEEDBACK_MS);
 }
 
+const localWorktree = computed(() => {
+  if (!worktreeEnabled.value || !detail.value) return null;
+  return worktreeByBranch.value.get(detail.value.sourceBranch) ?? null;
+});
+
 const SAFE_PATH_RE = /^[\w.\-/]+$/;
 
 function getDependencyUrl(dep: string): string | null {
@@ -165,18 +170,12 @@ function openInGitLab() {
               />
             </div>
           </div>
-          <div
-            v-if="worktreeEnabled && worktreeByBranch.get(detail.sourceBranch)"
-            class="col-span-full"
-          >
+          <div v-if="localWorktree" class="col-span-full">
             <p class="text-dimmed text-xs">Local worktree</p>
             <div class="flex items-center gap-1">
               <UIcon name="i-lucide-folder-git-2" class="size-3.5 shrink-0 text-info" />
-              <p
-                class="min-w-0 truncate font-mono text-xs"
-                :title="worktreeByBranch.get(detail.sourceBranch)!.path"
-              >
-                {{ worktreeByBranch.get(detail.sourceBranch)!.path }}
+              <p class="min-w-0 truncate font-mono text-xs" :title="localWorktree.path">
+                {{ localWorktree.path }}
               </p>
               <UButton
                 :icon="copiedField === 'worktree' ? 'i-lucide-check' : 'i-lucide-copy'"
@@ -185,7 +184,7 @@ function openInGitLab() {
                 size="xs"
                 class="shrink-0"
                 aria-label="Copy worktree path"
-                @click="copyToClipboard(worktreeByBranch.get(detail.sourceBranch)!.path, 'worktree')"
+                @click="copyToClipboard(localWorktree.path, 'worktree')"
               />
             </div>
           </div>

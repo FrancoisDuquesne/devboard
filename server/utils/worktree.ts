@@ -3,7 +3,6 @@ import { readdir, realpath, stat } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { promisify } from "node:util";
 import type { Worktree, WorktreeResponse } from "~/types";
-import { getConfig } from "./config";
 
 const execFileAsync = promisify(execFile);
 
@@ -13,11 +12,6 @@ const CACHE_TTL_MS = 30000;
 
 let cachedResult: WorktreeResponse | null = null;
 let cachedAt = 0;
-
-export function invalidateWorktreeCache() {
-  cachedResult = null;
-  cachedAt = 0;
-}
 
 function parseWorktreePorcelain(output: string, repoName: string): Worktree[] {
   const worktrees: Worktree[] = [];
@@ -59,7 +53,9 @@ function isWithinAllowedParent(
   resolvedPath: string,
   allowedParents: string[],
 ): boolean {
-  return allowedParents.some((parent) => resolvedPath.startsWith(parent));
+  return allowedParents.some(
+    (parent) => resolvedPath === parent || resolvedPath.startsWith(`${parent}/`),
+  );
 }
 
 async function scanDirectory(
@@ -128,21 +124,15 @@ export async function getWorktrees(): Promise<WorktreeResponse> {
   }
 
   const envDirs = process.env.WORKTREE_SCAN_DIRS;
-  const locked = !!envDirs;
-
-  let dirs: string[];
-  if (envDirs) {
-    dirs = envDirs
-      .split(",")
-      .map((d) => d.trim())
-      .filter(Boolean);
-  } else {
-    const config = await getConfig();
-    dirs = config.scanDirs;
-  }
+  const dirs = envDirs
+    ? envDirs
+        .split(",")
+        .map((d) => d.trim())
+        .filter(Boolean)
+    : [];
 
   if (dirs.length === 0) {
-    return { configured: false, scanDirs: [], locked, worktrees: [] };
+    return { configured: false, scanDirs: [], worktrees: [] };
   }
 
   const resolvedParents: string[] = [];
@@ -154,15 +144,14 @@ export async function getWorktrees(): Promise<WorktreeResponse> {
     }
   }
 
-  const allWorktrees: Worktree[] = [];
-  for (const dir of resolvedParents) {
-    allWorktrees.push(...(await scanDirectory(dir, resolvedParents)));
-  }
+  const results = await Promise.all(
+    resolvedParents.map((dir) => scanDirectory(dir, resolvedParents)),
+  );
+  const allWorktrees = results.flat();
 
   const result: WorktreeResponse = {
     configured: true,
     scanDirs: dirs,
-    locked,
     worktrees: allWorktrees,
   };
   cachedResult = result;

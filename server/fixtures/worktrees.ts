@@ -3,7 +3,6 @@ import type { WorktreeResponse } from "~/types";
 export const demoWorktrees: WorktreeResponse = {
   configured: true,
   scanDirs: ["/home/user/repos"],
-  locked: false,
   worktrees: [
     {
       branch: "main",
