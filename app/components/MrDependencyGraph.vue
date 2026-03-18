@@ -294,10 +294,9 @@ const isFiltered = computed(
           <UBadge
             v-if="visibleWorktreeCount > 0"
             :label="visibleWorktreeCount > 9 ? '9+' : String(visibleWorktreeCount)"
-            color="info"
-            variant="solid"
+            color="primary"
             size="sm"
-            class="absolute -top-1 -right-1 pointer-events-none"
+            class="absolute -top-1.5 -right-1.5 pointer-events-none"
           />
         </div>
 
@@ -309,12 +308,13 @@ const isFiltered = computed(
             aria-label="Notifications"
             @click="panelOpen = !panelOpen"
           />
-          <span
+          <UBadge
             v-if="totalCount > 0"
-            class="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-error text-white text-xs font-bold leading-none pointer-events-none"
-          >
-            {{ totalCount > 9 ? "9+" : totalCount }}
-          </span>
+            :label="totalCount > 9 ? '9+' : String(totalCount)"
+            color="error"
+            size="sm"
+            class="absolute -top-1.5 -right-1.5 pointer-events-none"
+          />
         </div>
 
         <SettingsPopover />
