@@ -19,9 +19,17 @@ function copyPath(path: string) {
   }, COPY_FEEDBACK_MS);
 }
 
-function findMrForBranch(branch: string | null): DevBoardMR | undefined {
+const branchMrMap = computed(() => {
+  const map = new Map<string, DevBoardMR>();
+  for (const mr of mrs.value) {
+    map.set(mr.sourceBranch, mr);
+  }
+  return map;
+});
+
+function getMrForBranch(branch: string | null): DevBoardMR | undefined {
   if (!branch) return undefined;
-  return mrs.value.find((mr) => mr.sourceBranch === branch);
+  return branchMrMap.value.get(branch);
 }
 
 function onNavigateMr(mr: DevBoardMR) {
@@ -84,9 +92,9 @@ function onNavigateMr(mr: DevBoardMR) {
                 />
                 <template v-if="wt.branch">
                   <button
-                    v-if="findMrForBranch(wt.branch)"
+                    v-if="getMrForBranch(wt.branch)"
                     class="min-w-0 truncate text-sm font-medium text-primary hover:underline text-left"
-                    @click="onNavigateMr(findMrForBranch(wt.branch)!)"
+                    @click="onNavigateMr(getMrForBranch(wt.branch)!)"
                   >
                     {{ wt.branch }}
                   </button>
