@@ -8,6 +8,7 @@ const shortcutGroups = [
     shortcuts: [
       { keys: ["Cmd", "K"], description: "Quick search" },
       { keys: ["T"], description: "Toggle inbox panel" },
+      { keys: ["W"], description: "Toggle worktree panel" },
       { keys: ["Escape"], description: "Close panel / drawer" },
     ],
   },

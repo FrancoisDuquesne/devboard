@@ -12,6 +12,7 @@ const open = defineModel<boolean>("open", { default: false });
 
 const { fetchMrDetail } = useGitlab();
 const { status: authStatus } = useGitlabAuth();
+const { enabled: worktreeEnabled, worktreeByBranch } = useWorktrees();
 const now = useNow();
 const { copy } = useClipboard();
 
@@ -31,6 +32,11 @@ function copyToClipboard(value: string, field: string) {
     copiedField.value = null;
   }, COPY_FEEDBACK_MS);
 }
+
+const localWorktree = computed(() => {
+  if (!worktreeEnabled.value || !detail.value) return null;
+  return worktreeByBranch.value.get(detail.value.sourceBranch) ?? null;
+});
 
 const SAFE_PATH_RE = /^[\w.\-/]+$/;
 
@@ -161,6 +167,24 @@ function openInGitLab() {
                 class="shrink-0"
                 aria-label="Copy source branch"
                 @click="copyToClipboard(detail.sourceBranch, 'source')"
+              />
+            </div>
+          </div>
+          <div v-if="localWorktree" class="col-span-full">
+            <p class="text-dimmed text-xs">Local worktree</p>
+            <div class="flex items-center gap-1">
+              <UIcon name="i-lucide-folder-git-2" class="size-3.5 shrink-0 text-info" />
+              <p class="min-w-0 truncate font-mono text-xs" :title="localWorktree.path">
+                {{ localWorktree.path }}
+              </p>
+              <UButton
+                :icon="copiedField === 'worktree' ? 'i-lucide-check' : 'i-lucide-copy'"
+                :color="copiedField === 'worktree' ? 'success' : 'neutral'"
+                variant="ghost"
+                size="xs"
+                class="shrink-0"
+                aria-label="Copy worktree path"
+                @click="copyToClipboard(localWorktree.path, 'worktree')"
               />
             </div>
           </div>

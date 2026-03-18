@@ -127,6 +127,19 @@ export interface DevBoardIssueDetail extends DevBoardIssue {
   }[];
 }
 
+export interface Worktree {
+  branch: string | null;
+  path: string;
+  isMain: boolean;
+  repoName: string;
+}
+
+export interface WorktreeResponse {
+  configured: boolean;
+  scanDirs: string[];
+  worktrees: Worktree[];
+}
+
 export interface DevBoardMRDetail extends DevBoardMR {
   description: string;
   closingIssues: DevBoardIssue[];

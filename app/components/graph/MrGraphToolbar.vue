@@ -11,6 +11,8 @@ const {
   pipelineFilter,
   nodeTypeFilter,
   graphGroupBy,
+  sortField,
+  sortDirection,
   resetAllFilters,
 } = usePreferences();
 
@@ -33,6 +35,12 @@ const pipelineOptions = [
   { label: "Running", value: "running" },
 ];
 
+const sortOptions = [
+  { label: "Updated", value: "updated" },
+  { label: "Created", value: "created" },
+  { label: "Title", value: "title" },
+];
+
 const nodeTypeItems: { label: string; value: GraphNodeType; icon: string }[] = [
   { label: "MRs", value: "mr", icon: "i-lucide-git-pull-request" },
   { label: "Issues", value: "issue", icon: "i-lucide-circle-dot" },
@@ -42,13 +50,16 @@ const nodeTypeItems: { label: string; value: GraphNodeType; icon: string }[] = [
 function toggleNodeType(type: GraphNodeType) {
   const idx = nodeTypeFilter.value.indexOf(type);
   if (idx >= 0) {
-    // Don't allow deselecting all
     if (nodeTypeFilter.value.length > 1) {
       nodeTypeFilter.value = nodeTypeFilter.value.filter((t) => t !== type);
     }
   } else {
     nodeTypeFilter.value = [...nodeTypeFilter.value, type];
   }
+}
+
+function toggleSortDirection() {
+  sortDirection.value = sortDirection.value === "desc" ? "asc" : "desc";
 }
 
 const mrTypeEnabled = computed(() => nodeTypeFilter.value.includes("mr"));
@@ -60,81 +71,41 @@ const activeFilterCount = computed(() => {
   if (pipelineFilter.value !== "all") count++;
   return count;
 });
-
-const roleLabelMap: Record<string, string> = {
-  author: "My MRs",
-  reviewer: "To review",
-  mentioned: "Mentioned",
-};
-
-const pipelineLabelMap: Record<string, string> = {
-  success: "Passed",
-  failed: "Failed",
-  running: "Running",
-};
-
-const activeChips = computed(() => {
-  const chips: { key: string; label: string }[] = [];
-  if (roleFilter.value !== "all") {
-    chips.push({
-      key: "role",
-      label: roleLabelMap[roleFilter.value] ?? roleFilter.value,
-    });
-  }
-  if (projectFilter.value) {
-    chips.push({
-      key: "project",
-      label: projectFilter.value.split("/").pop() ?? projectFilter.value,
-    });
-  }
-  if (pipelineFilter.value !== "all") {
-    chips.push({
-      key: "pipeline",
-      label: pipelineLabelMap[pipelineFilter.value] ?? pipelineFilter.value,
-    });
-  }
-  return chips;
-});
-
-function dismissChip(key: string) {
-  if (key === "role") roleFilter.value = "all";
-  else if (key === "project") projectFilter.value = null;
-  else if (key === "pipeline") pipelineFilter.value = "all";
-}
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-2">
-    <UPopover :popper="{ placement: 'bottom-start' }">
+  <div class="flex items-center gap-2">
+    <!-- Mobile: single "Controls" dropdown with everything -->
+    <UPopover :popper="{ placement: 'bottom-start' }" class="sm:hidden">
       <UButton
-        icon="i-lucide-filter"
-        :variant="activeFilterCount > 0 ? 'soft' : 'ghost'"
-        :color="activeFilterCount > 0 ? 'violet' : 'neutral'"
+        icon="i-lucide-sliders-horizontal"
+        trailing-icon="i-lucide-chevron-down"
+        variant="soft"
+        :color="activeFilterCount > 0 ? 'filter' : 'neutral'"
       >
-        <span class="hidden sm:inline">Filters</span>
-        <template #trailing>
-          <UBadge
-            v-if="activeFilterCount > 0"
-            :label="String(activeFilterCount)"
-            color="violet"
-            variant="solid"
-          />
-        </template>
+        <UBadge
+          v-if="activeFilterCount > 0"
+          :label="String(activeFilterCount)"
+          color="filter"
+          variant="solid"
+          size="sm"
+        />
       </UButton>
 
       <template #content>
-        <div class="w-64 space-y-4 p-4 sm:w-72">
+        <div class="w-72 space-y-4 p-4">
+          <!-- Filters -->
           <div>
             <p class="mb-1.5 text-xs font-medium text-dimmed">Project</p>
             <ProjectFilter v-model="projectFilter" :projects="projects" />
           </div>
 
-          <div :class="{ 'opacity-40 pointer-events-none': !mrTypeEnabled }">
+          <div>
             <div class="mb-1.5 flex items-center gap-1.5">
               <UIcon name="i-lucide-git-pull-request" class="size-3.5 text-dimmed" />
               <p class="text-xs font-medium text-dimmed">MR filters</p>
             </div>
-            <p v-if="!mrTypeEnabled" class="mb-2 text-xs text-dimmed/60 italic">
+            <p v-if="!mrTypeEnabled" class="mb-2 text-xs text-dimmed italic">
               Enable MR nodes to use these filters
             </p>
             <div class="space-y-2">
@@ -143,6 +114,7 @@ function dismissChip(key: string) {
                 :items="roleOptions"
                 value-key="value"
                 variant="soft"
+                :disabled="!mrTypeEnabled"
                 aria-label="Filter by role"
                 class="w-full"
               />
@@ -151,8 +123,68 @@ function dismissChip(key: string) {
                 :items="pipelineOptions"
                 value-key="value"
                 variant="soft"
+                :disabled="!mrTypeEnabled"
                 aria-label="Filter by pipeline"
                 class="w-full"
+              />
+            </div>
+          </div>
+
+          <!-- Show -->
+          <div>
+            <p class="mb-1.5 text-xs font-medium text-dimmed">Show</p>
+            <UFieldGroup>
+              <UButton
+                v-for="item in nodeTypeItems"
+                :key="item.value"
+                :icon="item.icon"
+                :variant="nodeTypeFilter.includes(item.value) ? 'soft' : 'outline'"
+                :color="nodeTypeFilter.includes(item.value) ? 'primary' : 'neutral'"
+                size="sm"
+                @click="toggleNodeType(item.value)"
+              >
+                {{ item.label }}
+              </UButton>
+            </UFieldGroup>
+          </div>
+
+          <!-- Group by -->
+          <div>
+            <p class="mb-1.5 text-xs font-medium text-dimmed">Group by</p>
+            <UFieldGroup>
+              <UButton
+                v-for="item in groupByItems"
+                :key="item.value"
+                :icon="item.icon"
+                variant="soft"
+                :color="graphGroupBy === item.value ? 'primary' : 'neutral'"
+                size="sm"
+                @click="graphGroupBy = item.value"
+              >
+                {{ item.label }}
+              </UButton>
+            </UFieldGroup>
+          </div>
+
+          <!-- Sort -->
+          <div>
+            <p class="mb-1.5 text-xs font-medium text-dimmed">Sort by</p>
+            <div class="flex items-center gap-1">
+              <USelect
+                v-model="sortField"
+                :items="sortOptions"
+                value-key="value"
+                variant="soft"
+                aria-label="Sort by"
+                class="flex-1"
+              />
+              <UButton
+                :icon="sortDirection === 'desc' ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-narrow-wide'"
+                variant="soft"
+                color="neutral"
+                size="sm"
+                :aria-label="sortDirection === 'desc' ? 'Sort ascending' : 'Sort descending'"
+                @click="toggleSortDirection"
               />
             </div>
           </div>
@@ -160,7 +192,7 @@ function dismissChip(key: string) {
           <UButton
             v-if="activeFilterCount > 0"
             icon="i-lucide-rotate-ccw"
-            label="Reset all filters"
+            label="Reset filters"
             variant="ghost"
             color="neutral"
             size="sm"
@@ -171,44 +203,123 @@ function dismissChip(key: string) {
       </template>
     </UPopover>
 
-    <button
-      v-for="chip in activeChips"
-      :key="chip.key"
-      class="hidden items-center gap-1 rounded-md bg-violet-500/10 px-2 py-1 text-xs text-violet-600 transition-colors hover:bg-violet-500/20 sm:flex dark:text-violet-400"
-      @click="dismissChip(chip.key)"
-    >
-      {{ chip.label }}
-      <UIcon name="i-lucide-x" class="size-3" />
-    </button>
+    <!-- Desktop: inline controls -->
+    <UPopover :popper="{ placement: 'bottom-start' }" class="hidden sm:flex">
+      <UButton
+        icon="i-lucide-filter"
+        trailing-icon="i-lucide-chevron-down"
+        variant="soft"
+        :color="activeFilterCount > 0 ? 'filter' : 'neutral'"
+      >
+        Filters
+        <UBadge
+          v-if="activeFilterCount > 0"
+          :label="String(activeFilterCount)"
+          color="filter"
+          variant="solid"
+          size="sm"
+        />
+      </UButton>
 
-    <USeparator orientation="vertical" class="hidden h-6 sm:block" />
+      <template #content>
+        <div class="w-72 space-y-4 p-4">
+          <div>
+            <p class="mb-1.5 text-xs font-medium text-dimmed">Project</p>
+            <ProjectFilter v-model="projectFilter" :projects="projects" />
+          </div>
 
-    <UFieldGroup>
+          <div>
+            <div class="mb-1.5 flex items-center gap-1.5">
+              <UIcon name="i-lucide-git-pull-request" class="size-3.5 text-dimmed" />
+              <p class="text-xs font-medium text-dimmed">MR filters</p>
+            </div>
+            <p v-if="!mrTypeEnabled" class="mb-2 text-xs text-dimmed italic">
+              Enable MR nodes to use these filters
+            </p>
+            <div class="space-y-2">
+              <USelect
+                v-model="roleFilter"
+                :items="roleOptions"
+                value-key="value"
+                variant="soft"
+                :disabled="!mrTypeEnabled"
+                aria-label="Filter by role"
+                class="w-full"
+              />
+              <USelect
+                v-model="pipelineFilter"
+                :items="pipelineOptions"
+                value-key="value"
+                variant="soft"
+                :disabled="!mrTypeEnabled"
+                aria-label="Filter by pipeline"
+                class="w-full"
+              />
+            </div>
+          </div>
+
+          <UButton
+            v-if="activeFilterCount > 0"
+            icon="i-lucide-rotate-ccw"
+            label="Reset filters"
+            variant="ghost"
+            color="neutral"
+            size="sm"
+            block
+            @click="resetAllFilters()"
+          />
+        </div>
+      </template>
+    </UPopover>
+
+    <USeparator orientation="vertical" class="hidden h-5 sm:block" />
+
+    <UFieldGroup class="hidden sm:flex">
       <UButton
         v-for="item in nodeTypeItems"
         :key="item.value"
         :icon="item.icon"
-        :variant="nodeTypeFilter.includes(item.value) ? 'soft' : 'ghost'"
+        :variant="nodeTypeFilter.includes(item.value) ? 'soft' : 'outline'"
         :color="nodeTypeFilter.includes(item.value) ? 'primary' : 'neutral'"
         @click="toggleNodeType(item.value)"
       >
-        <span class="hidden sm:inline">{{ item.label }}</span>
+        {{ item.label }}
       </UButton>
     </UFieldGroup>
 
-    <USeparator orientation="vertical" class="hidden h-6 sm:block" />
+    <USeparator orientation="vertical" class="hidden h-5 sm:block" />
 
-    <UFieldGroup>
+    <UFieldGroup class="hidden sm:flex">
       <UButton
         v-for="item in groupByItems"
         :key="item.value"
         :icon="item.icon"
-        :variant="graphGroupBy === item.value ? 'soft' : 'ghost'"
+        variant="soft"
         :color="graphGroupBy === item.value ? 'primary' : 'neutral'"
         @click="graphGroupBy = item.value"
       >
-        <span class="hidden sm:inline">{{ item.label }}</span>
+        {{ item.label }}
       </UButton>
+    </UFieldGroup>
+
+    <USeparator orientation="vertical" class="hidden h-5 sm:block" />
+
+    <UFieldGroup class="hidden sm:flex">
+      <USelect
+        v-model="sortField"
+        :items="sortOptions"
+        value-key="value"
+        variant="soft"
+        aria-label="Sort by"
+        class="w-28"
+      />
+      <UButton
+        :icon="sortDirection === 'desc' ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-narrow-wide'"
+        variant="soft"
+        color="neutral"
+        :aria-label="sortDirection === 'desc' ? 'Sort ascending' : 'Sort descending'"
+        @click="toggleSortDirection"
+      />
     </UFieldGroup>
   </div>
 </template>

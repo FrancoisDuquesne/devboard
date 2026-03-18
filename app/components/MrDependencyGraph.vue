@@ -44,6 +44,19 @@ const { loading: refreshLoading, fetchMrs } = useGitlab();
 const { helpOpen } = useHelp();
 const { panelOpen, fetchTodos } = useTodos();
 const { totalCount } = useNotifications();
+const {
+  enabled: worktreeEnabled,
+  panelOpen: worktreePanelOpen,
+  worktrees: worktreeList,
+} = useWorktrees();
+const { hiddenWorktreePaths } = usePreferences();
+const visibleWorktreeCount = computed(
+  () =>
+    worktreeList.value.filter((wt) => !hiddenWorktreePaths.value.includes(wt.path))
+      .length,
+);
+
+const legendCollapsed = ref(false);
 
 // Filter and sort MRs before feeding to graph
 const filteredAndSortedMrs = computed(() => {
@@ -205,16 +218,6 @@ watch(
   },
 );
 
-const sortOptions = [
-  { label: "Updated", value: "updated" },
-  { label: "Created", value: "created" },
-  { label: "Title", value: "title" },
-];
-
-function toggleSortDirection() {
-  sortDirection.value = sortDirection.value === "desc" ? "asc" : "desc";
-}
-
 // Only fitView when node set structurally changes (added/removed), not on data updates
 const nodeIdSignature = computed(() =>
   nodes.value
@@ -260,7 +263,7 @@ const isFiltered = computed(
     <!-- Top-left: branding + graph controls pill -->
     <div class="absolute top-2 left-2 sm:top-4 sm:left-4 z-10">
       <nav
-        class="flex items-center gap-1.5 rounded-lg border border-muted bg-default/90 px-2 sm:px-3 py-1.5 backdrop-blur"
+        class="flex items-center gap-1.5 rounded-lg border border-muted bg-default/90 px-2 sm:px-3 py-1.5 backdrop-blur shadow-lg"
       >
         <div class="flex items-center gap-1.5 px-1">
           <UIcon name="i-lucide-workflow" class="size-4 text-primary" />
@@ -270,35 +273,32 @@ const isFiltered = computed(
         <USeparator orientation="vertical" class="h-5" />
 
         <GraphMrGraphToolbar :projects="projects" />
-
-        <USeparator orientation="vertical" class="hidden h-5 sm:block" />
-
-        <UFieldGroup class="hidden sm:flex">
-          <USelect
-            v-model="sortField"
-            :items="sortOptions"
-            value-key="value"
-            variant="soft"
-            aria-label="Sort by"
-            class="w-28"
-          />
-          <UButton
-            :icon="sortDirection === 'desc' ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-narrow-wide'"
-            variant="soft"
-            color="neutral"
-            :aria-label="sortDirection === 'desc' ? 'Sort ascending' : 'Sort descending'"
-            @click="toggleSortDirection"
-          />
-        </UFieldGroup>
       </nav>
     </div>
 
     <!-- Top-right: search, notifications, settings -->
     <div class="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
       <nav
-        class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 px-2 py-1.5 backdrop-blur"
+        class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 px-2 py-1.5 backdrop-blur shadow-lg"
       >
         <SearchPalette />
+
+        <div v-if="worktreeEnabled" class="relative">
+          <UButton
+            icon="i-lucide-folder-git-2"
+            variant="ghost"
+            color="neutral"
+            aria-label="Worktrees"
+            @click="worktreePanelOpen = !worktreePanelOpen"
+          />
+          <UBadge
+            v-if="visibleWorktreeCount > 0"
+            :label="visibleWorktreeCount > 9 ? '9+' : String(visibleWorktreeCount)"
+            color="primary"
+            size="sm"
+            class="absolute -top-1.5 -right-1.5 pointer-events-none"
+          />
+        </div>
 
         <div class="relative">
           <UButton
@@ -308,12 +308,13 @@ const isFiltered = computed(
             aria-label="Notifications"
             @click="panelOpen = !panelOpen"
           />
-          <span
+          <UBadge
             v-if="totalCount > 0"
-            class="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-error text-white text-xs font-bold leading-none pointer-events-none"
-          >
-            {{ totalCount > 9 ? "9+" : totalCount }}
-          </span>
+            :label="totalCount > 9 ? '9+' : String(totalCount)"
+            color="error"
+            size="sm"
+            class="absolute -top-1.5 -right-1.5 pointer-events-none"
+          />
         </div>
 
         <SettingsPopover />
@@ -452,7 +453,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
 
       <Panel position="bottom-right">
         <div
-          class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 p-1 backdrop-blur"
+          class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 p-1 backdrop-blur shadow-lg"
         >
           <UTooltip
             :text="status?.connected ? `Connected to ${status.host} as ${status.username}` : status?.error || 'Disconnected from GitLab'"
@@ -524,69 +525,94 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
 
       <Panel position="bottom-left">
         <div
-          class="flex flex-col gap-y-1 rounded-lg border border-muted bg-default/90 px-3 py-1.5 text-xs text-dimmed backdrop-blur"
+          class="group/legend flex flex-col rounded-lg border border-muted bg-default/90 text-xs text-dimmed backdrop-blur shadow-lg"
         >
-          <template v-if="hasEdges">
-            <span class="font-medium">Edges:</span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-0.5 w-4 bg-emerald-500" /> Healthy
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-0.5 w-4 bg-red-500" /> Blocked
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-0.5 w-4 bg-amber-500" /> In progress
-            </span>
-            <span class="flex items-center gap-1">
-              <span
-                class="inline-block h-0.5 w-4 border-t-2 border-dashed border-gray-400"
-              />
-              Unresolved
-            </span>
-            <span class="my-1 w-full border-b border-accented" />
-          </template>
-          <span class="font-medium">Nodes:</span>
-          <span v-if="showMrs" class="flex items-center gap-1">
-            <UIcon name="i-lucide-git-pull-request" class="size-3 text-primary" />
-            Merge request
-          </span>
-          <span v-if="showIssues" class="flex items-center gap-1">
-            <UIcon name="i-lucide-circle-dot" class="size-3 text-primary" />
-            Issue
-          </span>
-          <span v-if="showTodos" class="flex items-center gap-1">
-            <UIcon name="i-lucide-list-todo" class="size-3 text-primary" />
-            Todo
-          </span>
-          <template v-if="showMrs">
-            <span class="my-1 w-full border-b border-accented" />
-            <span class="font-medium">MR status:</span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-primary" /> On track
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-warning" /> Needs
-              attention
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-error" /> Action needed
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-success" /> Merged
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-info" /> Mentioned
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="inline-block h-3 w-1 rounded-full bg-dimmed" /> Draft
-            </span>
-          </template>
-          <UTooltip
-            v-if="!hasEdges && !isFiltered"
-            text="Add &quot;Depends on !N&quot; in MR descriptions to see dependency edges."
+          <!-- Collapsible content (expands upward above the header) -->
+          <div
+            class="grid transition-[grid-template-rows] duration-200"
+            :class="legendCollapsed ? 'grid-rows-[0fr] group-hover/legend:grid-rows-[1fr]' : 'grid-rows-[1fr]'"
           >
-            <UIcon name="i-lucide-info" class="mt-1 size-3.5 cursor-help text-dimmed" />
-          </UTooltip>
+            <div class="overflow-hidden">
+              <div class="flex flex-col gap-y-1 px-3 pt-1.5">
+                <template v-if="hasEdges">
+                  <span class="font-medium">Edges:</span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-0.5 w-4 bg-emerald-500" /> Healthy
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-0.5 w-4 bg-red-500" /> Blocked
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-0.5 w-4 bg-amber-500" /> In progress
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span
+                      class="inline-block h-0.5 w-4 border-t-2 border-dashed border-gray-400"
+                    />
+                    Unresolved
+                  </span>
+                  <span class="my-1 w-full border-b border-accented" />
+                </template>
+                <span class="font-medium">Nodes:</span>
+                <span v-if="showMrs" class="flex items-center gap-1">
+                  <UIcon name="i-lucide-git-pull-request" class="size-3 text-primary" />
+                  Merge request
+                </span>
+                <span v-if="showIssues" class="flex items-center gap-1">
+                  <UIcon name="i-lucide-circle-dot" class="size-3 text-primary" />
+                  Issue
+                </span>
+                <span v-if="showTodos" class="flex items-center gap-1">
+                  <UIcon name="i-lucide-list-todo" class="size-3 text-primary" />
+                  Todo
+                </span>
+                <template v-if="showMrs">
+                  <span class="my-1 w-full border-b border-accented" />
+                  <span class="font-medium">MR status:</span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-primary" /> On
+                    track
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-warning" /> Needs
+                    attention
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-error" /> Action
+                    needed
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-success" /> Merged
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-info" /> Mentioned
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="inline-block h-3 w-1 rounded-full bg-dimmed" /> Draft
+                  </span>
+                </template>
+                <UTooltip
+                  v-if="!hasEdges && !isFiltered"
+                  text="Add &quot;Depends on !N&quot; in MR descriptions to see dependency edges."
+                >
+                  <UIcon
+                    name="i-lucide-info"
+                    class="mt-1 size-3.5 cursor-help text-dimmed"
+                  />
+                </UTooltip>
+              </div>
+            </div>
+          </div>
+          <!-- Header (always at the bottom, never moves) -->
+          <UButton
+            label="Legend"
+            :trailing-icon="legendCollapsed ? 'i-lucide-chevrons-up-down' : 'i-lucide-chevrons-down-up'"
+            variant="link"
+            color="neutral"
+            size="sm"
+            block
+            @click="legendCollapsed = !legendCollapsed"
+          />
         </div>
       </Panel>
     </VueFlow>

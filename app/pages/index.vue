@@ -19,6 +19,13 @@ const {
   startAutoRefresh: startIssuesRefresh,
   stopAutoRefresh: stopIssuesRefresh,
 } = useIssues();
+const {
+  enabled: worktreesEnabled,
+  panelOpen: worktreePanelOpen,
+  fetchWorktrees,
+  startAutoRefresh: startWorktreesRefresh,
+  stopAutoRefresh: stopWorktreesRefresh,
+} = useWorktrees();
 
 const { selectedMr: searchSelectedMr } = useSearch();
 const { helpOpen } = useHelp();
@@ -79,31 +86,54 @@ onMounted(() => {
   fetchTodos();
   fetchMentionMrs();
   fetchIssues();
+  fetchWorktrees();
   startAutoRefresh();
   startTodosRefresh();
   startIssuesRefresh();
+  startWorktreesRefresh();
   showWelcomeIfFirstRun();
+});
+
+watch(worktreesEnabled, (val) => {
+  if (val) {
+    fetchWorktrees();
+    startWorktreesRefresh();
+  } else {
+    stopWorktreesRefresh();
+  }
 });
 
 onUnmounted(() => {
   stopAutoRefresh();
   stopTodosRefresh();
   stopIssuesRefresh();
+  stopWorktreesRefresh();
 });
 
 // Keyboard shortcuts
 defineShortcuts({
   r: () => {
-    if (!drawerOpen.value && !issueDrawerOpen.value && !todoPanelOpen.value) {
+    if (
+      !drawerOpen.value &&
+      !issueDrawerOpen.value &&
+      !todoPanelOpen.value &&
+      !worktreePanelOpen.value
+    ) {
       fetchMrs();
       fetchTodos();
       fetchMentionMrs();
       fetchIssues();
+      fetchWorktrees();
     }
   },
   t: () => {
-    if (!drawerOpen.value && !issueDrawerOpen.value) {
+    if (!drawerOpen.value && !issueDrawerOpen.value && !worktreePanelOpen.value) {
       todoPanelOpen.value = !todoPanelOpen.value;
+    }
+  },
+  w: () => {
+    if (!drawerOpen.value && !todoPanelOpen.value && worktreesEnabled.value) {
+      worktreePanelOpen.value = !worktreePanelOpen.value;
     }
   },
   "?": () => {
@@ -111,6 +141,7 @@ defineShortcuts({
       !drawerOpen.value &&
       !issueDrawerOpen.value &&
       !todoPanelOpen.value &&
+      !worktreePanelOpen.value &&
       !welcomeOpen.value
     ) {
       helpOpen.value = !helpOpen.value;
@@ -119,6 +150,8 @@ defineShortcuts({
   escape: () => {
     if (helpOpen.value) {
       helpOpen.value = false;
+    } else if (worktreePanelOpen.value) {
+      worktreePanelOpen.value = false;
     } else if (todoPanelOpen.value) {
       todoPanelOpen.value = false;
     } else if (drawerOpen.value) {
@@ -183,6 +216,7 @@ watch(pageTitle, (title) => useHead({ title }), { immediate: true });
   </div>
 
   <TodoPanel @select-mr="onSelectMr" />
+  <WorktreePanel v-if="worktreesEnabled" @select-mr="onSelectMr" />
   <MrDetailDrawer v-model:open="drawerOpen" :mr="selectedMr" />
   <IssueDetailDrawer v-model:open="issueDrawerOpen" :issue="selectedIssue" />
   <HelpModal />

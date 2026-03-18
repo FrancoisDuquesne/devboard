@@ -26,12 +26,26 @@ const nodeTypeFilter = useLocalStorage<GraphNodeType[]>("devboard:node-type-filt
   "todo",
 ]);
 const graphGroupBy = useLocalStorage<GraphGroupBy>("devboard:graph-group-by", "none");
+const hiddenWorktreePaths = useLocalStorage<string[]>(
+  "devboard:hidden-worktree-paths",
+  [],
+);
 
 export function usePreferences() {
   function resetAllFilters() {
     roleFilter.value = "all";
     projectFilter.value = null;
     pipelineFilter.value = "all";
+  }
+
+  function hideWorktree(path: string) {
+    if (!hiddenWorktreePaths.value.includes(path)) {
+      hiddenWorktreePaths.value.push(path);
+    }
+  }
+
+  function unhideWorktree(path: string) {
+    hiddenWorktreePaths.value = hiddenWorktreePaths.value.filter((p) => p !== path);
   }
 
   return {
@@ -43,6 +57,9 @@ export function usePreferences() {
     autoRefreshInterval,
     nodeTypeFilter,
     graphGroupBy,
+    hiddenWorktreePaths,
+    hideWorktree,
+    unhideWorktree,
     resetAllFilters,
   };
 }
