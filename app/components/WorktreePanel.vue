@@ -8,8 +8,10 @@ const emit = defineEmits<{
 
 const { worktrees, worktreesByRepo, panelOpen } = useWorktrees();
 const { mrs } = useGitlab();
+const { hiddenWorktreePaths, hideWorktree, unhideWorktree } = usePreferences();
 const { copy } = useClipboard();
 const copiedPath = ref<string | null>(null);
+const showHidden = ref(false);
 const searchQuery = ref("");
 
 function copyPath(path: string) {
@@ -30,17 +32,33 @@ const branchMrMap = computed(() => {
 
 const visibleWorktreesByRepo = computed(() => {
   const query = searchQuery.value.toLowerCase();
-  if (!query) return worktreesByRepo.value;
   const map = new Map<string, Worktree[]>();
   for (const [repo, wts] of worktreesByRepo.value) {
     const visible = wts.filter((wt) => {
-      const matchesBranch = wt.branch?.toLowerCase().includes(query);
-      const matchesPath = wt.path.toLowerCase().includes(query);
-      return matchesBranch || matchesPath;
+      if (hiddenWorktreePaths.value.includes(wt.path)) return false;
+      if (query) {
+        const matchesBranch = wt.branch?.toLowerCase().includes(query);
+        const matchesPath = wt.path.toLowerCase().includes(query);
+        return matchesBranch || matchesPath;
+      }
+      return true;
     });
     if (visible.length > 0) map.set(repo, visible);
   }
   return map;
+});
+
+const hiddenWorktreesList = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  return worktrees.value.filter((wt) => {
+    if (!hiddenWorktreePaths.value.includes(wt.path)) return false;
+    if (query) {
+      const matchesBranch = wt.branch?.toLowerCase().includes(query);
+      const matchesPath = wt.path.toLowerCase().includes(query);
+      return matchesBranch || matchesPath;
+    }
+    return true;
+  });
 });
 
 const visibleWorktreeCount = computed(() => {
@@ -114,7 +132,7 @@ function onNavigateMr(mr: DevBoardMR) {
             <div
               v-for="wt in repoWorktrees"
               :key="wt.path"
-              class="flex flex-col gap-0.5 rounded-md px-2 py-1.5 hover:bg-elevated"
+              class="group flex flex-col gap-0.5 rounded-md px-2 py-1.5 hover:bg-elevated"
             >
               <div class="flex items-center gap-1.5">
                 <UIcon
@@ -157,6 +175,58 @@ function onNavigateMr(mr: DevBoardMR) {
                   class="shrink-0"
                   aria-label="Copy worktree path"
                   @click="copyPath(wt.path)"
+                />
+                <UButton
+                  icon="i-lucide-eye-off"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  class="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Hide worktree"
+                  @click="hideWorktree(wt.path)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden worktrees section -->
+          <div v-if="hiddenWorktreesList.length > 0" class="mt-2">
+            <button
+              class="flex items-center gap-1.5 px-1 text-xs text-dimmed hover:text-default transition-colors"
+              @click="showHidden = !showHidden"
+            >
+              <UIcon name="i-lucide-eye" class="size-3.5" />
+              <span>Show hidden ({{ hiddenWorktreesList.length }})</span>
+              <UIcon
+                :name="showHidden ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                class="size-3"
+              />
+            </button>
+
+            <div v-if="showHidden" class="mt-1.5 flex flex-col gap-1">
+              <div
+                v-for="wt in hiddenWorktreesList"
+                :key="wt.path"
+                class="flex items-center gap-1.5 rounded-md px-2 py-1 text-dimmed"
+              >
+                <UIcon
+                  name="i-lucide-git-branch"
+                  class="size-3.5 shrink-0 opacity-50"
+                />
+                <span class="min-w-0 truncate text-sm">
+                  {{ wt.branch ?? "detached" }}
+                </span>
+                <span class="min-w-0 truncate font-mono text-xs opacity-60">
+                  {{ wt.path }}
+                </span>
+                <UButton
+                  icon="i-lucide-eye"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  class="ml-auto shrink-0"
+                  aria-label="Unhide worktree"
+                  @click="unhideWorktree(wt.path)"
                 />
               </div>
             </div>
