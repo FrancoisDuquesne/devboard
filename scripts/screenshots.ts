@@ -77,6 +77,7 @@ async function run() {
       await page.evaluate((theme) => {
         localStorage.setItem("nuxt-color-mode", theme);
         localStorage.setItem("devboard:has-seen-welcome", "true");
+        localStorage.setItem("devboard:worktrees-enabled", "true");
       }, opts.theme);
       await page.goto(BASE, { waitUntil: "networkidle" });
     }
@@ -130,7 +131,15 @@ async function run() {
       await page.waitForTimeout(800);
     });
 
-    // ── Scene 6: Help modal ──────────────────────────────────────
+    // ── Scene 6: Worktree panel ──────────────────────────────────
+    await screenshot("worktree-panel.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+      await page.keyboard.press("w");
+      await page.waitForTimeout(800);
+    });
+
+    // ── Scene 7: Help modal ──────────────────────────────────────
     await screenshot("help.png", async (page) => {
       await navigate(page, { theme: "dark" });
       await waitForGraph(page);

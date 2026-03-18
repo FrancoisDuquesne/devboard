@@ -42,6 +42,12 @@ Todo and notification panel with tabs for all todos, mentions, and required acti
 
 <img src="docs/screenshots/todo-panel.png" alt="Todo panel" width="100%" />
 
+### Worktree tracking
+
+See your local git worktrees alongside MRs. DevBoard scans configured directories, links worktrees to MRs by branch name, and shows a "Local" badge on graph nodes that have a local checkout. Copy paths, jump to linked MRs or issues, and hide worktrees you don't need.
+
+<img src="docs/screenshots/worktree-panel.png" alt="Worktree panel" width="100%" />
+
 ### And more
 
 - **Smart action badges** — DevBoard determines what you need to do next: review, fix pipeline, rebase, resolve threads, or assign a reviewer
@@ -49,6 +55,7 @@ Todo and notification panel with tabs for all todos, mentions, and required acti
 - **Group by project** — Organize the graph into project-scoped boxes
 - **Auto-refresh** — Configurable interval (30s–5min) with toast notifications for changes
 - **Persistent layout** — Dragged node positions saved to localStorage
+- **Collapsible legend** — Graph legend collapses to save space, peeks on hover
 - **Dark mode** — Toggle between light and dark themes
 
 ---
@@ -75,9 +82,12 @@ Create a `.env` file:
 ```env
 GITLAB_HOST=gitlab.example.com
 GITLAB_PRIVATE_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+
+# Optional: enable worktree tracking
+WORKTREE_SCAN_DIRS=/home/user/repos,/home/user/projects
 ```
 
-Or, if you have `glab` configured, no `.env` is needed — DevBoard reads your token from `~/.config/glab-cli/config.yml` automatically.
+Or, if you have `glab` configured, no `.env` is needed for GitLab — DevBoard reads your token from `~/.config/glab-cli/config.yml` automatically.
 
 ### Run
 
@@ -108,6 +118,7 @@ This starts the dev server with pre-built fixtures: 8 MRs across 3 projects with
 | `Ctrl+K` / `Cmd+K` | Open search palette |
 | `r` | Refresh all data |
 | `t` | Toggle inbox / todo panel |
+| `w` | Toggle worktree panel |
 | `?` | Show keyboard shortcuts |
 | `Escape` | Close panel or drawer |
 | `Ctrl+click` / `Cmd+click` node | Open MR in GitLab |
@@ -142,24 +153,27 @@ app/                          # Frontend (Vue 3 + Composition API)
 │   ├── MrDetailDrawer.vue    # MR detail slide-over
 │   ├── SearchPalette.vue     # Cmd+K fuzzy search
 │   ├── TodoPanel.vue         # Inbox panel
+│   ├── WorktreePanel.vue     # Local worktree tracking panel
 │   └── *Badge.vue            # Status, pipeline, approval, threads badges
 ├── composables/              # Reactive state and data fetching
 └── types/                    # TypeScript definitions
 
 server/                       # Nitro API proxy
 ├── api/gitlab/               # 7 API routes
+├── api/worktrees/            # Worktree scanning endpoint
 ├── middleware/demo.ts         # Demo mode interceptor
 ├── fixtures/                  # Mock data for demo mode
-└── utils/                    # GitLab client, auth, normalization
+└── utils/                    # GitLab client, auth, normalization, worktree scanner
 ```
 
 ### Data flow
 
-1. Frontend fetches MRs, issues, todos, and mention-MRs in parallel via the Nitro proxy
+1. Frontend fetches MRs, issues, todos, mention-MRs, and worktrees in parallel via the Nitro proxy
 2. Server enriches each MR with approvals, threads, linked issues, and dependency refs
-3. `useMrGraph` computes a Dagre layout, creating nodes and edges
-4. Vue Flow renders the interactive graph with custom node components
-5. Auto-refresh polls at the configured interval with toast notifications on changes
+3. Worktree scanner reads `WORKTREE_SCAN_DIRS`, runs `git worktree list` on each repo, and caches results (30s TTL)
+4. `useMrGraph` computes a Dagre layout, creating nodes and edges
+5. Vue Flow renders the interactive graph with custom node components
+6. Auto-refresh polls at the configured interval with toast notifications on changes
 
 ---
 
