@@ -101,6 +101,29 @@ export interface DevBoardTodo {
   createdAt: string;
 }
 
+export interface DevBoardIssueDetail extends DevBoardIssue {
+  description: string;
+  author: {
+    username: string;
+    name: string;
+    avatarUrl: string;
+  };
+  assignees: {
+    username: string;
+    name: string;
+    avatarUrl: string;
+  }[];
+  createdAt: string;
+  closedAt: string | null;
+  relatedMrs: {
+    iid: number;
+    title: string;
+    status: MrStatus;
+    webUrl: string;
+    reference: string;
+  }[];
+}
+
 export interface DevBoardMRDetail extends DevBoardMR {
   closingIssues: DevBoardIssue[];
   relatedMrs: {

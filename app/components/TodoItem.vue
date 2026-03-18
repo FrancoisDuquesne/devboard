@@ -35,7 +35,10 @@ const isMention = computed(
     />
 
     <div class="min-w-0 flex-1">
-      <p class="flex items-baseline gap-1 text-sm leading-snug" :title="`!${todo.target.iid} ${todo.target.title}`">
+      <p
+        class="flex items-baseline gap-1 text-sm leading-snug"
+        :title="`!${todo.target.iid} ${todo.target.title}`"
+      >
         <span class="shrink-0 font-medium">{{ todo.author.name }}</span>
         <span class="shrink-0 text-dimmed">{{ config.label }}</span>
         <span class="min-w-0 truncate font-medium"

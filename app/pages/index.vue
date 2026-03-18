@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevBoardMR } from "~/types";
+import type { DevBoardIssue, DevBoardMR } from "~/types";
 
 const { mrs, loading, error, projects, fetchMrs, startAutoRefresh, stopAutoRefresh } =
   useGitlab();
@@ -25,10 +25,19 @@ const { helpOpen } = useHelp();
 const { welcomeOpen, showWelcomeIfFirstRun } = useOnboarding();
 const selectedMr = ref<DevBoardMR | null>(null);
 const drawerOpen = ref(false);
+const selectedIssue = ref<DevBoardIssue | null>(null);
+const issueDrawerOpen = ref(false);
 
 function onSelectMr(mr: DevBoardMR) {
+  issueDrawerOpen.value = false;
   selectedMr.value = mr;
   drawerOpen.value = true;
+}
+
+function onSelectIssue(issue: DevBoardIssue) {
+  drawerOpen.value = false;
+  selectedIssue.value = issue;
+  issueDrawerOpen.value = true;
 }
 
 watch(searchSelectedMr, (mr) => {
@@ -85,7 +94,7 @@ onUnmounted(() => {
 // Keyboard shortcuts
 defineShortcuts({
   r: () => {
-    if (!drawerOpen.value && !todoPanelOpen.value) {
+    if (!drawerOpen.value && !issueDrawerOpen.value && !todoPanelOpen.value) {
       fetchMrs();
       fetchTodos();
       fetchMentionMrs();
@@ -93,12 +102,17 @@ defineShortcuts({
     }
   },
   t: () => {
-    if (!drawerOpen.value) {
+    if (!drawerOpen.value && !issueDrawerOpen.value) {
       todoPanelOpen.value = !todoPanelOpen.value;
     }
   },
   "?": () => {
-    if (!drawerOpen.value && !todoPanelOpen.value && !welcomeOpen.value) {
+    if (
+      !drawerOpen.value &&
+      !issueDrawerOpen.value &&
+      !todoPanelOpen.value &&
+      !welcomeOpen.value
+    ) {
       helpOpen.value = !helpOpen.value;
     }
   },
@@ -107,8 +121,10 @@ defineShortcuts({
       helpOpen.value = false;
     } else if (todoPanelOpen.value) {
       todoPanelOpen.value = false;
-    } else {
+    } else if (drawerOpen.value) {
       drawerOpen.value = false;
+    } else {
+      issueDrawerOpen.value = false;
     }
   },
 });
@@ -137,8 +153,9 @@ watch(pageTitle, (title) => useHead({ title }), { immediate: true });
       :mention-mr-ids="mentionMrIds"
       :issues="standaloneIssues"
       :todos="todos"
-      :focused-node-id="drawerOpen && selectedMr ? String(selectedMr.id) : null"
+      :focused-node-id="drawerOpen && selectedMr ? String(selectedMr.id) : issueDrawerOpen && selectedIssue ? String(selectedIssue.id) : null"
       @select="onSelectMr"
+      @select-issue="onSelectIssue"
     />
     <Transition
       enter-active-class="transition duration-200 ease-out"
@@ -167,6 +184,7 @@ watch(pageTitle, (title) => useHead({ title }), { immediate: true });
 
   <TodoPanel @select-mr="onSelectMr" />
   <MrDetailDrawer v-model:open="drawerOpen" :mr="selectedMr" />
+  <IssueDetailDrawer v-model:open="issueDrawerOpen" :issue="selectedIssue" />
   <HelpModal />
   <WelcomeOverlay />
 </template>

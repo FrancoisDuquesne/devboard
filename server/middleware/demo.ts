@@ -4,6 +4,7 @@ import {
   demoMrs,
   demoStatus,
   demoTodos,
+  getDemoIssueDetail,
   getDemoMrDetail,
 } from "../fixtures";
 
@@ -37,6 +38,16 @@ export default defineEventHandler((event) => {
     const detail = getDemoMrDetail(projectId, iid);
     if (detail) return detail;
     throw createError({ statusCode: 404, statusMessage: "MR not found" });
+  }
+
+  // GET /api/gitlab/issues/:projectId/:iid
+  const issueDetailMatch = pathname.match(/^\/api\/gitlab\/issues\/(\d+)\/(\d+)$/);
+  if (issueDetailMatch) {
+    const projectId = Number(issueDetailMatch[1]);
+    const iid = Number(issueDetailMatch[2]);
+    const detail = getDemoIssueDetail(projectId, iid);
+    if (detail) return detail;
+    throw createError({ statusCode: 404, statusMessage: "Issue not found" });
   }
 
   // GET /api/gitlab/issues

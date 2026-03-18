@@ -11,8 +11,15 @@ defineEmits<{
   click: [];
 }>();
 
-function openIssue() {
+function openIssue(event: MouseEvent) {
+  event.stopPropagation();
   safeOpen(props.issue.webUrl);
+}
+
+function handleClick(event: MouseEvent) {
+  if (props.clickable !== false) {
+    openIssue(event);
+  }
 }
 </script>
 
@@ -24,7 +31,7 @@ function openIssue() {
       size="sm"
       :aria-label="`${clickable !== false && issue.webUrl ? 'Open issue ' : 'Issue '}${issue.reference || `#${issue.iid}`}`"
       class="w-full justify-start truncate"
-      @click.stop="clickable !== false ? openIssue() : $emit('click')"
+      @click="handleClick"
     >
       <UIcon name="i-lucide-circle-dot" class="size-3 shrink-0 text-primary" />
       <span

@@ -64,7 +64,12 @@ function onNavigateMr(mr: DevBoardMR) {
 </script>
 
 <template>
-  <USlideover v-model:open="panelOpen" side="right" :overlay="false" :ui="{ content: 'max-w-xl' }">
+  <USlideover
+    v-model:open="panelOpen"
+    side="right"
+    :overlay="false"
+    :ui="{ content: 'max-w-xl' }"
+  >
     <template #title>
       <div class="flex items-center gap-2">
         <span>Inbox</span>

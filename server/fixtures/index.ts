@@ -1,4 +1,4 @@
-export { demoIssues } from "./issues";
+export { demoIssues, getDemoIssueDetail } from "./issues";
 export { demoMentionMrs } from "./mention-mrs";
 export { getDemoMrDetail } from "./mr-detail";
 export { demoMrs } from "./mrs";

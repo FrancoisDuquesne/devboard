@@ -23,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [mr: DevBoardMR];
+  "select-issue": [issue: DevBoardIssue];
 }>();
 
 const {
@@ -227,6 +228,9 @@ function onNodeClick({ node }: NodeMouseEvent) {
   if (node.type === "group-node") return;
   if (node.type === "mr-node" && node.data) {
     emit("select", node.data as DevBoardMR);
+  }
+  if (node.type === "issue-node" && node.data) {
+    emit("select-issue", node.data as DevBoardIssue);
   }
 }
 

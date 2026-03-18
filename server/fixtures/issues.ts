@@ -1,5 +1,5 @@
-import type { DevBoardIssue } from "~/types";
-import { demoUrl } from "./constants";
+import type { DevBoardIssue, DevBoardIssueDetail } from "~/types";
+import { DEMO_USERS, demoUrl } from "./constants";
 
 export const demoIssues: DevBoardIssue[] = [
   {
@@ -39,3 +39,85 @@ export const demoIssues: DevBoardIssue[] = [
     updatedAt: "2026-03-16T14:30:00.000Z",
   },
 ];
+
+const issueDetailExtras: Record<
+  number,
+  Pick<
+    DevBoardIssueDetail,
+    "description" | "author" | "assignees" | "closedAt" | "relatedMrs"
+  >
+> = {
+  // acme/platform#21
+  3021: {
+    description:
+      "We need real-time event streaming via GraphQL subscriptions so the frontend can receive live updates without polling.",
+    author: DEMO_USERS.sam,
+    assignees: [DEMO_USERS.sam, DEMO_USERS.alex],
+    closedAt: null,
+    relatedMrs: [
+      {
+        iid: 42,
+        title: "Implement GraphQL subscriptions API",
+        status: "open",
+        webUrl: demoUrl("acme/platform", "merge_requests/42"),
+        reference: "acme/platform!42",
+      },
+    ],
+  },
+  // acme/frontend#55
+  3055: {
+    description:
+      "Build a notification bell component that shows unread count and a dropdown of recent notifications.",
+    author: DEMO_USERS.mika,
+    assignees: [DEMO_USERS.mika],
+    closedAt: null,
+    relatedMrs: [
+      {
+        iid: 87,
+        title: "Real-time notification bell component",
+        status: "open",
+        webUrl: demoUrl("acme/frontend", "merge_requests/87"),
+        reference: "acme/frontend!87",
+      },
+    ],
+  },
+  // acme/infra#8
+  3008: {
+    description:
+      "Provision dedicated Kubernetes pods for the subscription worker service with proper resource limits and HPA.",
+    author: DEMO_USERS.priya,
+    assignees: [DEMO_USERS.priya, DEMO_USERS.jordan],
+    closedAt: null,
+    relatedMrs: [
+      {
+        iid: 14,
+        title: "Update K8s manifests for subscription pods",
+        status: "open",
+        webUrl: demoUrl("acme/infra", "merge_requests/14"),
+        reference: "acme/infra!14",
+      },
+    ],
+  },
+};
+
+export function getDemoIssueDetail(
+  projectId: number,
+  iid: number,
+): DevBoardIssueDetail | null {
+  const issue = demoIssues.find((i) => i.projectId === projectId && i.iid === iid);
+  if (!issue) return null;
+
+  const extras = issueDetailExtras[issue.id] ?? {
+    description: "",
+    author: DEMO_USERS.alex,
+    assignees: [],
+    closedAt: null,
+    relatedMrs: [],
+  };
+
+  return {
+    ...issue,
+    ...extras,
+    createdAt: issue.updatedAt ?? "2026-03-15T10:00:00.000Z",
+  };
+}

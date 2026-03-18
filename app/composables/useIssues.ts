@@ -1,4 +1,4 @@
-import type { DevBoardIssue } from "~/types";
+import type { DevBoardIssue, DevBoardIssueDetail } from "~/types";
 import { usePreferences } from "./usePreferences";
 
 const issues = ref<DevBoardIssue[]>([]);
@@ -41,6 +41,19 @@ export function useIssues() {
     }
   }
 
+  async function fetchIssueDetail(
+    projectId: number,
+    iid: number,
+  ): Promise<DevBoardIssueDetail | null> {
+    try {
+      return await $fetch<DevBoardIssueDetail>(
+        `/api/gitlab/issues/${projectId}/${iid}`,
+      );
+    } catch {
+      return null;
+    }
+  }
+
   function startAutoRefresh() {
     stopAutoRefresh();
     if (autoRefreshInterval.value > 0) {
@@ -60,6 +73,7 @@ export function useIssues() {
     loading,
     error,
     fetchIssues,
+    fetchIssueDetail,
     startAutoRefresh,
     stopAutoRefresh,
   };

@@ -54,6 +54,7 @@ export interface GitLabIssue {
   id: number;
   iid: number;
   title: string;
+  description: string | null;
   state: "opened" | "closed";
   web_url: string;
   labels: string[];
