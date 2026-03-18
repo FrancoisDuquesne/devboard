@@ -6,12 +6,15 @@ import { demoMrs } from "./mrs";
 const detailExtras: Record<
   number,
   {
+    description: string;
     closingIssues: DevBoardMRDetail["closingIssues"];
     relatedMrs: DevBoardMRDetail["relatedMrs"];
   }
 > = {
   // acme/infra!14
   1014: {
+    description:
+      "## Summary\n\nAdds dedicated K8s pod manifests for the subscription worker service.\n\n- Resource limits: `256Mi` memory, `200m` CPU\n- HPA configured for 2–8 replicas based on CPU utilization\n- Readiness probe on `/healthz`\n\nDepends on acme/platform!42",
     closingIssues: [
       {
         id: 3008,
@@ -38,6 +41,8 @@ const detailExtras: Record<
 
   // acme/platform!42
   1042: {
+    description:
+      "## What\n\nImplements the server-side GraphQL subscriptions layer using `graphql-ws`.\n\n### Changes\n\n- New `SubscriptionServer` class wrapping the WebSocket transport\n- Redis pub/sub adapter for multi-instance broadcasting\n- Schema stitching for `Subscription` root type\n\n### Testing\n\n```bash\nnpm run test:subscriptions\n```\n\nCloses acme/platform#21",
     closingIssues: [
       {
         id: 3021,
@@ -78,6 +83,8 @@ const detailExtras: Record<
 
   // acme/frontend!87
   1087: {
+    description:
+      "Adds the notification bell component to the app header.\n\n- Displays unread count badge\n- Dropdown with recent notifications\n- Mark-as-read on click\n- Uses the new subscription endpoint from acme/platform!42",
     closingIssues: [
       {
         id: 3055,
@@ -104,6 +111,8 @@ const detailExtras: Record<
 
   // acme/platform!43
   1043: {
+    description:
+      "WIP: Adds JWT-based auth for WebSocket connections.\n\n- Validates token on `connection_init`\n- Attaches user context to subscription resolvers\n- Rejects expired tokens with `4401` close code",
     closingIssues: [],
     relatedMrs: [
       {
@@ -117,19 +126,19 @@ const detailExtras: Record<
   },
 
   // acme/platform!38
-  1038: { closingIssues: [], relatedMrs: [] },
+  1038: { description: "", closingIssues: [], relatedMrs: [] },
 
   // acme/frontend!91
-  1091: { closingIssues: [], relatedMrs: [] },
+  1091: { description: "", closingIssues: [], relatedMrs: [] },
 
   // acme/platform!39
-  1039: { closingIssues: [], relatedMrs: [] },
+  1039: { description: "", closingIssues: [], relatedMrs: [] },
 
   // acme/infra!9
-  1009: { closingIssues: [], relatedMrs: [] },
+  1009: { description: "", closingIssues: [], relatedMrs: [] },
 
   // acme/infra!12 (mention-only MR)
-  1112: { closingIssues: [], relatedMrs: [] },
+  1112: { description: "", closingIssues: [], relatedMrs: [] },
 };
 
 export function getDemoMrDetail(
@@ -141,6 +150,7 @@ export function getDemoMrDetail(
   if (!mr) return null;
 
   const extras = detailExtras[mr.id] ?? {
+    description: "",
     closingIssues: [],
     relatedMrs: [],
   };

@@ -3,22 +3,26 @@ import type { DevBoardIssue } from "~/types";
 
 const props = defineProps<{
   issue: DevBoardIssue;
-  clickable?: boolean;
   projectInitials?: string;
 }>();
 
-defineEmits<{
-  click: [];
-}>();
-
-function openIssue(event: MouseEvent) {
-  event.stopPropagation();
-  safeOpen(props.issue.webUrl);
-}
+const selectIssue = inject<((issue: DevBoardIssue) => void) | null>(
+  "select-issue",
+  null,
+);
 
 function handleClick(event: MouseEvent) {
-  if (props.clickable !== false) {
-    openIssue(event);
+  if (event.ctrlKey || event.metaKey) {
+    event.stopPropagation();
+    safeOpen(props.issue.webUrl);
+    return;
+  }
+  if (selectIssue) {
+    event.stopPropagation();
+    selectIssue(props.issue);
+  } else {
+    event.stopPropagation();
+    safeOpen(props.issue.webUrl);
   }
 }
 </script>
@@ -29,7 +33,7 @@ function handleClick(event: MouseEvent) {
       variant="outline"
       color="neutral"
       size="sm"
-      :aria-label="`${clickable !== false && issue.webUrl ? 'Open issue ' : 'Issue '}${issue.reference || `#${issue.iid}`}`"
+      :aria-label="`Issue ${issue.reference || `#${issue.iid}`}`"
       class="w-full justify-start truncate"
       @click="handleClick"
     >

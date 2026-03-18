@@ -68,7 +68,6 @@ function onNavigateMr(mr: DevBoardMR) {
     v-model:open="panelOpen"
     side="right"
     :overlay="false"
-    :ui="{ content: 'max-w-xl' }"
   >
     <template #title>
       <div class="flex items-center gap-2">

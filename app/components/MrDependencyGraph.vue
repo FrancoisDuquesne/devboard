@@ -26,6 +26,10 @@ const emit = defineEmits<{
   "select-issue": [issue: DevBoardIssue];
 }>();
 
+provide("select-issue", (issue: DevBoardIssue) => {
+  emit("select-issue", issue);
+});
+
 const {
   roleFilter,
   projectFilter,

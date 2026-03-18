@@ -125,6 +125,7 @@ export interface DevBoardIssueDetail extends DevBoardIssue {
 }
 
 export interface DevBoardMRDetail extends DevBoardMR {
+  description: string;
   closingIssues: DevBoardIssue[];
   relatedMrs: {
     iid: number;

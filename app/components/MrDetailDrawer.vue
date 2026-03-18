@@ -222,6 +222,11 @@ function openInGitLab() {
           </div>
         </div>
 
+        <div v-if="detail.description" class="text-sm">
+          <p class="text-dimmed text-xs mb-1">Description</p>
+          <MarkdownBlock :content="detail.description" />
+        </div>
+
         <div v-if="detail.closingIssues.length > 0">
           <p class="text-dimmed text-xs mb-1">Closing issues</p>
           <div class="flex flex-col gap-1">
@@ -233,7 +238,7 @@ function openInGitLab() {
               rel="noopener noreferrer"
               class="flex items-center gap-1.5 text-sm text-primary hover:underline"
             >
-              <UIcon name="i-lucide-circle-dot" class="size-4" />
+              <UIcon name="i-lucide-circle-dot" class="size-4 shrink-0" />
               {{ issue.reference }} — {{ issue.title }}
             </a>
           </div>
@@ -250,7 +255,7 @@ function openInGitLab() {
               rel="noopener noreferrer"
               class="flex items-center gap-1.5 text-sm text-primary hover:underline"
             >
-              <UIcon name="i-lucide-git-pull-request" class="size-4" />
+              <UIcon name="i-lucide-git-pull-request" class="size-4 shrink-0" />
               {{ rmr.reference }} — {{ rmr.title }}
               <StatusBadge :status="rmr.status" />
             </a>

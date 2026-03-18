@@ -8,5 +8,17 @@ export default defineAppConfig({
         base: "cursor-pointer",
       },
     },
+    slideover: {
+      variants: {
+        side: {
+          right: {
+            content: "max-w-2xl",
+          },
+          left: {
+            content: "max-w-2xl",
+          },
+        },
+      },
+    },
   },
 });

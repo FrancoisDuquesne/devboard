@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { useClipboard } from "@vueuse/core";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
 import type { DevBoardIssue, DevBoardIssueDetail } from "~/types";
 import { getProjectInitials } from "~/utils/projectAlias";
-
-const renderedDescription = computed(() => {
-  if (!detail.value?.description) return "";
-  const raw = marked.parse(detail.value.description, { async: false }) as string;
-  return DOMPurify.sanitize(raw);
-});
 
 const props = defineProps<{
   issue: DevBoardIssue | null;
@@ -148,11 +140,7 @@ function openInGitLab() {
 
         <div v-if="detail.description" class="text-sm">
           <p class="text-dimmed text-xs mb-1">Description</p>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div
-            class="prose prose-sm dark:prose-invert max-w-none p-4 shadow-inner rounded-lg bg-muted"
-            v-html="renderedDescription"
-          />
+          <MarkdownBlock :content="detail.description" />
         </div>
 
         <div v-if="detail.relatedMrs.length > 0">
@@ -166,7 +154,7 @@ function openInGitLab() {
               rel="noopener noreferrer"
               class="flex items-center gap-1.5 text-sm text-primary hover:underline"
             >
-              <UIcon name="i-lucide-git-pull-request" class="size-4" />
+              <UIcon name="i-lucide-git-pull-request" class="size-4 shrink-0" />
               {{ rmr.reference }} — {{ rmr.title }}
               <StatusBadge :status="rmr.status" />
             </a>
