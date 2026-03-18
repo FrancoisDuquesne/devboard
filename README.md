@@ -48,6 +48,10 @@ See your local git worktrees alongside MRs. DevBoard scans configured directorie
 
 <img src="docs/screenshots/worktree-panel.png" alt="Worktree panel" width="100%" />
 
+### Annotations & drawing tools
+
+Add sticky notes and freehand drawings directly on the board. Notes support markdown rendering, resizing, and color-coded backgrounds. Drawing tools include freehand, arrows, and rectangles with color and stroke width options. An eraser tool lets you click any drawing to delete it. Everything persists locally.
+
 ### And more
 
 - **Smart action badges** — DevBoard determines what you need to do next: review, fix pipeline, rebase, resolve threads, or assign a reviewer
@@ -120,8 +124,13 @@ This starts the dev server with pre-built fixtures: 8 MRs across 3 projects with
 | `t` | Toggle inbox / todo panel |
 | `w` | Toggle worktree panel |
 | `?` | Show keyboard shortcuts |
-| `Escape` | Close panel or drawer |
+| `Escape` | Close panel, drawer, or deactivate tool |
 | `Ctrl+click` / `Cmd+click` node | Open MR in GitLab |
+| `v` | Select tool |
+| `n` | Sticky note tool |
+| `p` | Freehand draw tool |
+| `a` | Arrow tool |
+| `e` | Eraser tool |
 
 <img src="docs/screenshots/help.png" alt="Keyboard shortcuts modal" width="100%" />
 
@@ -150,12 +159,16 @@ app/                          # Frontend (Vue 3 + Composition API)
 ├── pages/index.vue           # Full-screen graph dashboard
 ├── components/
 │   ├── graph/                # Graph node components (MR, issue, todo, group)
+│   │   ├── StickyNoteNode.vue    # Draggable sticky note with markdown toggle
+│   │   ├── DrawingLayer.vue      # SVG overlay for freehand/arrow/rectangle drawings
+│   │   └── AnnotationToolbar.vue # Vertical tool picker with color/width pickers
 │   ├── MrDetailDrawer.vue    # MR detail slide-over
 │   ├── SearchPalette.vue     # Cmd+K fuzzy search
 │   ├── TodoPanel.vue         # Inbox panel
 │   ├── WorktreePanel.vue     # Local worktree tracking panel
 │   └── *Badge.vue            # Status, pipeline, approval, threads badges
 ├── composables/              # Reactive state and data fetching
+│   └── useAnnotations.ts     # Sticky notes + drawings state (localStorage)
 └── types/                    # TypeScript definitions
 
 server/                       # Nitro API proxy

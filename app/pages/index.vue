@@ -29,6 +29,7 @@ const {
 
 const { selectedMr: searchSelectedMr } = useSearch();
 const { helpOpen } = useHelp();
+const { activeTool } = useAnnotations();
 const { welcomeOpen, showWelcomeIfFirstRun } = useOnboarding();
 const selectedMr = ref<DevBoardMR | null>(null);
 const drawerOpen = ref(false);
@@ -110,15 +111,24 @@ onUnmounted(() => {
   stopWorktreesRefresh();
 });
 
+// Guard: skip shortcuts when user is typing or a panel/drawer is open
+function canUseShortcut() {
+  const tag = document.activeElement?.tagName;
+  if (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    document.activeElement?.isContentEditable
+  )
+    return false;
+  if (drawerOpen.value || issueDrawerOpen.value) return false;
+  if (todoPanelOpen.value || worktreePanelOpen.value) return false;
+  return true;
+}
+
 // Keyboard shortcuts
 defineShortcuts({
   r: () => {
-    if (
-      !drawerOpen.value &&
-      !issueDrawerOpen.value &&
-      !todoPanelOpen.value &&
-      !worktreePanelOpen.value
-    ) {
+    if (canUseShortcut()) {
       fetchMrs();
       fetchTodos();
       fetchMentionMrs();
@@ -127,28 +137,35 @@ defineShortcuts({
     }
   },
   t: () => {
-    if (!drawerOpen.value && !issueDrawerOpen.value && !worktreePanelOpen.value) {
-      todoPanelOpen.value = !todoPanelOpen.value;
-    }
+    if (canUseShortcut()) todoPanelOpen.value = !todoPanelOpen.value;
   },
   w: () => {
-    if (!drawerOpen.value && !todoPanelOpen.value && worktreesEnabled.value) {
+    if (canUseShortcut() && worktreesEnabled.value)
       worktreePanelOpen.value = !worktreePanelOpen.value;
-    }
   },
   "?": () => {
-    if (
-      !drawerOpen.value &&
-      !issueDrawerOpen.value &&
-      !todoPanelOpen.value &&
-      !worktreePanelOpen.value &&
-      !welcomeOpen.value
-    ) {
-      helpOpen.value = !helpOpen.value;
-    }
+    if (canUseShortcut() && !welcomeOpen.value) helpOpen.value = !helpOpen.value;
+  },
+  v: () => {
+    if (canUseShortcut()) activeTool.value = "select";
+  },
+  n: () => {
+    if (canUseShortcut()) activeTool.value = "sticky";
+  },
+  p: () => {
+    if (canUseShortcut()) activeTool.value = "freehand";
+  },
+  a: () => {
+    if (canUseShortcut()) activeTool.value = "arrow";
+  },
+  e: () => {
+    if (canUseShortcut()) activeTool.value = "eraser";
   },
   escape: () => {
-    if (helpOpen.value) {
+    // First, deactivate annotation tool
+    if (activeTool.value !== "select") {
+      activeTool.value = "select";
+    } else if (helpOpen.value) {
       helpOpen.value = false;
     } else if (worktreePanelOpen.value) {
       worktreePanelOpen.value = false;

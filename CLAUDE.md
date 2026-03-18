@@ -44,6 +44,9 @@ app/
 │   ├── MrDependencyGraph.vue  # Vue Flow graph visualization
 │   ├── ProjectFilter.vue      # Project dropdown filter
 │   ├── graph/                 # Graph-specific node components
+│   │   ├── StickyNoteNode.vue     # Sticky note with markdown toggle + resize
+│   │   ├── DrawingLayer.vue       # SVG overlay for freehand/arrow/rectangle
+│   │   └── AnnotationToolbar.vue  # Vertical tool picker + color/width pickers
 │   └── *Badge.vue             # Status, pipeline, approval, threads, action badges
 ├── composables/
 │   ├── useGitlab.ts           # MR fetching, auto-refresh, change detection
@@ -51,6 +54,7 @@ app/
 │   ├── usePreferences.ts      # LocalStorage-backed user preferences
 │   ├── useMrGraph.ts          # Graph layout computation (Dagre)
 │   ├── useActionStatus.ts     # Derive required action per MR
+│   ├── useAnnotations.ts      # Sticky notes + drawings state (localStorage)
 │   └── useNow.ts              # Reactive current time
 ├── types/                     # TypeScript type definitions
 └── utils/                     # Pure utility functions
@@ -89,4 +93,5 @@ server/
 - **Auto-refresh**: configurable interval, with toast notifications on changes
 - **Graph mode**: breaks out of the container with negative margins, fills viewport; the floating pill overlays on top
 - **Node focus**: clicking an MR node opens the detail drawer and highlights it — selected node gets a primary-colored glow via CSS (`has-focus` class on VueFlow wrapper), other nodes and edges dim to ~35% opacity; selection synced via `focusedNodeId` prop from `index.vue` to `MrDependencyGraph`
-- **Keyboard shortcuts**: `r` to refresh, `Escape` to close drawer
+- **Keyboard shortcuts**: `r` to refresh, `Escape` to close drawer, `v`/`n`/`p`/`a`/`e` for annotation tools; all single-letter shortcuts guarded by `canUseShortcut()` which checks for focused inputs
+- **Annotations**: sticky notes are Vue Flow custom nodes (drag/zoom for free), drawings are an SVG overlay outside VueFlow at `z-[5]`; toolbar at `z-10` above the drawing layer; `drawingsVisible` controls SVG visibility only, not sticky notes

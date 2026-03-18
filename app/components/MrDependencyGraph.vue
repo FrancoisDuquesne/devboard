@@ -7,6 +7,7 @@ import GraphGroupNode from "~/components/graph/GroupNode.vue";
 import GraphIssueGraphNode from "~/components/graph/IssueGraphNode.vue";
 import GraphMrGraphNode from "~/components/graph/MrGraphNode.vue";
 import GraphPhantomNode from "~/components/graph/PhantomNode.vue";
+import GraphStickyNoteNode from "~/components/graph/StickyNoteNode.vue";
 import GraphTodoGraphNode from "~/components/graph/TodoGraphNode.vue";
 import type { DevBoardIssue, DevBoardMR, DevBoardTodo } from "~/types";
 import { computeProjectAliases } from "~/utils/projectAlias";
@@ -57,6 +58,11 @@ const visibleWorktreeCount = computed(
 );
 
 const legendCollapsed = ref(false);
+const graphWrapperRef = ref<HTMLDivElement | null>(null);
+
+// Annotation tools
+const { stickyNotes, activeTool, drawingsVisible, addStickyNote, updateStickyNote } =
+  useAnnotations();
 
 // Filter and sort MRs before feeding to graph
 const filteredAndSortedMrs = computed(() => {
@@ -178,16 +184,33 @@ watch(filterSortSignature, () => {
 });
 
 // Apply stored positions on top of computed layout (skip group nodes)
-const positionedNodes = computed(() =>
-  nodes.value.map((node) => {
+const positionedNodes = computed(() => {
+  const graphNodes = nodes.value.map((node) => {
     if (node.type === "group-node") return node;
     const stored = storedPositions.value[node.id];
     if (stored) {
       return { ...node, position: stored };
     }
     return node;
-  }),
-);
+  });
+
+  // Add sticky notes as Vue Flow nodes (always visible, independent of drawingsVisible)
+  const stickyNodes = stickyNotes.value.map((note) => ({
+    id: note.id,
+    type: "sticky-note",
+    position: note.position,
+    zIndex: 1000,
+    data: {
+      text: note.text,
+      color: note.color,
+      width: note.width,
+      height: note.height,
+      markdown: note.markdown ?? false,
+    },
+  }));
+
+  return [...graphNodes, ...stickyNodes];
+});
 
 // biome-ignore lint/suspicious/noExplicitAny: Vue Flow node types require loose typing for custom components
 const nodeTypes: Record<string, any> = {
@@ -196,10 +219,18 @@ const nodeTypes: Record<string, any> = {
   "todo-node": markRaw(GraphTodoGraphNode),
   phantom: markRaw(GraphPhantomNode),
   "group-node": markRaw(GraphGroupNode),
+  "sticky-note": markRaw(GraphStickyNoteNode),
 };
 
-const { zoomIn, zoomOut, fitView, findNode, removeSelectedNodes, addSelectedNodes } =
-  useVueFlow();
+const {
+  zoomIn,
+  zoomOut,
+  fitView,
+  findNode,
+  removeSelectedNodes,
+  addSelectedNodes,
+  viewport,
+} = useVueFlow();
 
 // Sync focused node with Vue Flow selection state
 const hasFocusedNode = computed(() => !!props.focusedNodeId);
@@ -232,7 +263,7 @@ watch(nodeIdSignature, () => {
 const hasEdges = computed(() => edges.value.length > 0);
 
 function onNodeClick({ node }: NodeMouseEvent) {
-  if (node.type === "group-node") return;
+  if (node.type === "group-node" || node.type === "sticky-note") return;
   if (node.type === "mr-node" && node.data) {
     emit("select", node.data as DevBoardMR);
   }
@@ -243,11 +274,43 @@ function onNodeClick({ node }: NodeMouseEvent) {
 
 function onNodeDragStop({ node }: NodeDragEvent) {
   if (node.type === "group-node") return;
+  // Persist sticky note position back to annotations store
+  if (node.type === "sticky-note") {
+    updateStickyNote(node.id, {
+      position: { x: node.position.x, y: node.position.y },
+    });
+    return;
+  }
   storedPositions.value = {
     ...storedPositions.value,
     [node.id]: { x: node.position.x, y: node.position.y },
   };
 }
+
+function onPaneClick(event: MouseEvent) {
+  if (activeTool.value !== "sticky") return;
+  if (!graphWrapperRef.value) return;
+  const rect = graphWrapperRef.value.getBoundingClientRect();
+  const { x: vx, y: vy, zoom } = viewport.value;
+  const pos = {
+    x: (event.clientX - rect.left - vx) / zoom,
+    y: (event.clientY - rect.top - vy) / zoom,
+  };
+  addStickyNote(pos);
+}
+
+// Disable Vue Flow interactions when an annotation tool is active
+const isInteractiveOverlay = computed(
+  () =>
+    activeTool.value === "freehand" ||
+    activeTool.value === "arrow" ||
+    activeTool.value === "rectangle" ||
+    activeTool.value === "eraser",
+);
+const isAnnotationMode = computed(() => activeTool.value !== "select");
+const panOnDrag = computed(() => !isAnnotationMode.value);
+const nodesDraggable = computed(() => !isAnnotationMode.value);
+const zoomOnScroll = computed(() => !isInteractiveOverlay.value);
 
 const isFiltered = computed(
   () =>
@@ -259,7 +322,7 @@ const isFiltered = computed(
 </script>
 
 <template>
-  <div class="relative h-full">
+  <div ref="graphWrapperRef" class="relative h-full">
     <!-- Top-left: branding + graph controls pill -->
     <div class="absolute top-2 left-2 sm:top-4 sm:left-4 z-10">
       <nav
@@ -439,9 +502,15 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
       :edges="edges"
       :node-types="nodeTypes"
       :default-edge-options="{ type: 'smoothstep' }"
+      :pan-on-drag="panOnDrag"
+      :nodes-draggable="nodesDraggable"
+      :zoom-on-scroll="zoomOnScroll"
+      :zoom-on-pinch="zoomOnScroll"
+      :zoom-on-double-click="!isAnnotationMode"
       fit-view-on-init
       @node-click="onNodeClick"
       @node-drag-stop="onNodeDragStop"
+      @pane-click="onPaneClick"
     >
       <Background
         variant="dots"
@@ -616,5 +685,19 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
         </div>
       </Panel>
     </VueFlow>
+
+    <!-- Drawing overlay — outside VueFlow so it can capture pointer events on top -->
+    <GraphDrawingLayer
+      v-if="drawingsVisible && positionedNodes.length > 0"
+      :viewport="viewport"
+    />
+
+    <!-- Annotation toolbar — outside VueFlow, above the drawing layer -->
+    <div
+      v-if="positionedNodes.length > 0"
+      class="absolute top-16 left-2 sm:top-20 sm:left-4 z-10"
+    >
+      <GraphAnnotationToolbar />
+    </div>
   </div>
 </template>

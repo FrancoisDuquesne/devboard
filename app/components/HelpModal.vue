@@ -21,6 +21,18 @@ const shortcutGroups = [
     ],
   },
   {
+    title: "Annotations",
+    icon: "i-lucide-pencil",
+    shortcuts: [
+      { keys: ["V"], description: "Select tool" },
+      { keys: ["N"], description: "Sticky note tool" },
+      { keys: ["P"], description: "Freehand draw tool" },
+      { keys: ["A"], description: "Arrow tool" },
+      { keys: ["E"], description: "Eraser — click a drawing to delete" },
+      { keys: ["Escape"], description: "Back to select tool" },
+    ],
+  },
+  {
     title: "Help",
     icon: "i-lucide-life-buoy",
     shortcuts: [{ keys: ["?"], description: "Toggle this shortcuts panel" }],
@@ -43,6 +55,10 @@ const tips = [
   {
     icon: "i-lucide-group",
     text: "Group nodes by project or status using the toolbar.",
+  },
+  {
+    icon: "i-lucide-sticky-note",
+    text: "Add sticky notes and drawings to annotate your board — they persist locally.",
   },
 ];
 </script>

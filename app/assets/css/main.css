@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
 @import "@nuxt/ui";
 @import "@vue-flow/core/dist/style.css";
+@plugin "@tailwindcss/typography";
 
 /* Base transitions for smooth focus/unfocus */
 .vue-flow__node {

@@ -146,6 +146,31 @@ async function run() {
       await page.keyboard.press("?");
       await page.waitForTimeout(600);
     });
+
+    // ── Scene 8: Annotation toolbar with a sticky note ──────────
+    await screenshot("annotations.png", async (page) => {
+      await navigate(page, { theme: "dark" });
+      await waitForGraph(page);
+      // Select sticky note tool via keyboard
+      await page.keyboard.press("n");
+      await page.waitForTimeout(300);
+      // Click on the graph pane to place a sticky note
+      await page.mouse.click(700, 400);
+      await page.waitForTimeout(500);
+      // Double-click to edit, type some markdown
+      const sticky = page.locator(".vue-flow__node [class*=group\\/sticky]").first();
+      if (await sticky.count()) {
+        await sticky.dblclick();
+        await page.waitForTimeout(200);
+        await page.keyboard.type("## Sprint goal\n- Ship subscriptions API\n- Fix pipeline", { delay: 30 });
+        // Click away to finish editing
+        await page.mouse.click(400, 200);
+        await page.waitForTimeout(300);
+      }
+      // Switch to freehand tool to show the toolbar active
+      await page.keyboard.press("p");
+      await page.waitForTimeout(400);
+    });
   } finally {
     await browser.close();
   }
