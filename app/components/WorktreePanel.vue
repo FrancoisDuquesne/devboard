@@ -159,6 +159,30 @@ function onNavigateMr(mr: DevBoardMR) {
                   size="sm"
                   label="Main"
                 />
+                <div
+                  v-if="wt.branch && getMrForBranch(wt.branch)"
+                  class="ml-auto flex items-center gap-0.5"
+                >
+                  <UButton
+                    :to="getMrForBranch(wt.branch)!.webUrl"
+                    target="_blank"
+                    icon="i-lucide-git-pull-request"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                    aria-label="Open merge request"
+                  />
+                  <UButton
+                    v-if="getMrForBranch(wt.branch)!.linkedIssues.length > 0"
+                    :to="getMrForBranch(wt.branch)!.linkedIssues[0].webUrl"
+                    target="_blank"
+                    icon="i-lucide-circle-dot"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                    aria-label="Open linked issue"
+                  />
+                </div>
               </div>
               <div class="flex items-center gap-1">
                 <p
