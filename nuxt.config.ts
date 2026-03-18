@@ -12,6 +12,11 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-05-23",
   css: ["~/assets/css/main.css"],
   modules: ["@nuxt/ui"],
+  ui: {
+    theme: {
+      colors: ["filter"],
+    },
+  },
   app: {
     baseURL: "/",
     head: {

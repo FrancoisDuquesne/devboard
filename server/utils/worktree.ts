@@ -3,6 +3,7 @@ import { readdir, realpath, stat } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { promisify } from "node:util";
 import type { Worktree, WorktreeResponse } from "~/types";
+import { getConfig } from "./config";
 
 const execFileAsync = promisify(execFile);
 
@@ -12,6 +13,11 @@ const CACHE_TTL_MS = 30000;
 
 let cachedResult: WorktreeResponse | null = null;
 let cachedAt = 0;
+
+export function invalidateWorktreeCache() {
+  cachedResult = null;
+  cachedAt = 0;
+}
 
 function parseWorktreePorcelain(output: string, repoName: string): Worktree[] {
   const worktrees: Worktree[] = [];
@@ -116,27 +122,28 @@ async function scanDirectory(
 }
 
 export async function getWorktrees(): Promise<WorktreeResponse> {
-  if (process.env.WORKTREE_ENABLED !== "true") {
-    return { enabled: false, worktrees: [] };
-  }
-
   const now = Date.now();
   if (cachedResult && now - cachedAt < CACHE_TTL_MS) {
     return cachedResult;
   }
 
-  const scanDirs = process.env.WORKTREE_SCAN_DIRS;
-  if (!scanDirs) {
-    const result: WorktreeResponse = { enabled: true, worktrees: [] };
-    cachedResult = result;
-    cachedAt = now;
-    return result;
+  const envDirs = process.env.WORKTREE_SCAN_DIRS;
+  const locked = !!envDirs;
+
+  let dirs: string[];
+  if (envDirs) {
+    dirs = envDirs
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+  } else {
+    const config = await getConfig();
+    dirs = config.scanDirs;
   }
 
-  const dirs = scanDirs
-    .split(",")
-    .map((d) => d.trim())
-    .filter(Boolean);
+  if (dirs.length === 0) {
+    return { configured: false, scanDirs: [], locked, worktrees: [] };
+  }
 
   const resolvedParents: string[] = [];
   for (const dir of dirs) {
@@ -152,7 +159,12 @@ export async function getWorktrees(): Promise<WorktreeResponse> {
     allWorktrees.push(...(await scanDirectory(dir, resolvedParents)));
   }
 
-  const result: WorktreeResponse = { enabled: true, worktrees: allWorktrees };
+  const result: WorktreeResponse = {
+    configured: true,
+    scanDirs: dirs,
+    locked,
+    worktrees: allWorktrees,
+  };
   cachedResult = result;
   cachedAt = now;
   return result;

@@ -1,8 +1,12 @@
-import type { Worktree, WorktreeResponse } from "~/types";
+import { useLocalStorage } from "@vueuse/core";
+import type { ScanDirsConfigResponse, Worktree, WorktreeResponse } from "~/types";
 import { usePreferences } from "./usePreferences";
 
 const worktrees = ref<Worktree[]>([]);
-const enabled = ref(false);
+const configured = ref(false);
+const scanDirs = ref<string[]>([]);
+const configLocked = ref(false);
+const enabled = useLocalStorage("devboard:worktrees-enabled", false);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const panelOpen = ref(false);
@@ -27,6 +31,8 @@ export function useWorktrees() {
   }
 
   async function fetchWorktrees() {
+    if (!enabled.value) return;
+
     if (controller) controller.abort();
     controller = new AbortController();
     const signal = controller.signal;
@@ -37,13 +43,36 @@ export function useWorktrees() {
       const response = await $fetch<WorktreeResponse>("/api/worktrees", {
         signal,
       });
-      enabled.value = response.enabled;
+      configured.value = response.configured;
+      scanDirs.value = response.scanDirs;
+      configLocked.value = response.locked;
       worktrees.value = response.worktrees;
     } catch (e) {
       if (signal.aborted) return;
       error.value = e instanceof Error ? e.message : "Failed to fetch worktrees";
     } finally {
       if (!signal.aborted) loading.value = false;
+    }
+  }
+
+  async function fetchScanDirsConfig(): Promise<ScanDirsConfigResponse | null> {
+    try {
+      return await $fetch<ScanDirsConfigResponse>("/api/worktrees/scan-dirs");
+    } catch {
+      return null;
+    }
+  }
+
+  async function saveScanDirs(dirs: string[]): Promise<boolean> {
+    try {
+      await $fetch("/api/worktrees/scan-dirs", {
+        method: "PUT",
+        body: { scanDirs: dirs },
+      });
+      await fetchWorktrees();
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -86,6 +115,9 @@ export function useWorktrees() {
 
   return {
     worktrees,
+    configured,
+    scanDirs,
+    configLocked,
     enabled,
     loading,
     error,
@@ -93,6 +125,8 @@ export function useWorktrees() {
     worktreeByBranch,
     worktreesByRepo,
     fetchWorktrees,
+    fetchScanDirsConfig,
+    saveScanDirs,
     startAutoRefresh,
     stopAutoRefresh,
   };

@@ -132,84 +132,86 @@ function onNavigateMr(mr: DevBoardMR) {
             <div
               v-for="wt in repoWorktrees"
               :key="wt.path"
-              class="group flex flex-col gap-0.5 rounded-md px-2 py-1.5 hover:bg-elevated"
+              class="group flex items-start gap-1.5 rounded-md px-2 py-1.5 hover:bg-elevated"
             >
-              <div class="flex items-center gap-1.5">
-                <UIcon
-                  name="i-lucide-git-branch"
-                  class="size-3.5 shrink-0 text-dimmed"
-                />
-                <template v-if="wt.branch">
-                  <button
-                    v-if="getMrForBranch(wt.branch)"
-                    class="min-w-0 truncate text-sm font-medium text-primary hover:underline text-left"
-                    @click="onNavigateMr(getMrForBranch(wt.branch)!)"
-                  >
-                    {{ wt.branch }}
-                  </button>
-                  <span v-else class="min-w-0 truncate text-sm font-medium">
-                    {{ wt.branch }}
-                  </span>
-                </template>
-                <span v-else class="text-sm italic text-dimmed">detached</span>
-                <UBadge
-                  v-if="wt.isMain"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                  label="Main"
-                />
-                <div
-                  v-if="wt.branch && getMrForBranch(wt.branch)"
-                  class="ml-auto flex items-center gap-0.5"
-                >
-                  <UButton
-                    :to="getMrForBranch(wt.branch)!.webUrl"
-                    target="_blank"
-                    icon="i-lucide-git-pull-request"
-                    color="neutral"
-                    variant="ghost"
-                    size="xs"
-                    aria-label="Open merge request"
+              <div class="min-w-0 flex-1 flex flex-col gap-0.5">
+                <div class="flex items-center gap-1.5">
+                  <UIcon
+                    name="i-lucide-git-branch"
+                    class="size-3.5 shrink-0 text-dimmed"
                   />
-                  <UButton
-                    v-if="getMrForBranch(wt.branch)!.linkedIssues.length > 0"
-                    :to="getMrForBranch(wt.branch)!.linkedIssues[0].webUrl"
-                    target="_blank"
-                    icon="i-lucide-circle-dot"
+                  <template v-if="wt.branch">
+                    <button
+                      v-if="getMrForBranch(wt.branch)"
+                      class="min-w-0 truncate text-sm font-medium text-primary hover:underline text-left"
+                      @click="onNavigateMr(getMrForBranch(wt.branch)!)"
+                    >
+                      {{ wt.branch }}
+                    </button>
+                    <span v-else class="min-w-0 truncate text-sm font-medium">
+                      {{ wt.branch }}
+                    </span>
+                  </template>
+                  <span v-else class="text-sm italic text-dimmed">detached</span>
+                  <UBadge
+                    v-if="wt.isMain"
                     color="neutral"
+                    variant="subtle"
+                    size="sm"
+                    label="Main"
+                  />
+                  <div
+                    v-if="wt.branch && getMrForBranch(wt.branch)"
+                    class="ml-auto flex items-center gap-0.5"
+                  >
+                    <UButton
+                      :to="getMrForBranch(wt.branch)!.webUrl"
+                      target="_blank"
+                      icon="i-lucide-git-pull-request"
+                      color="neutral"
+                      variant="ghost"
+                      size="xs"
+                      aria-label="Open merge request"
+                    />
+                    <UButton
+                      v-if="getMrForBranch(wt.branch)!.linkedIssues.length > 0"
+                      :to="getMrForBranch(wt.branch)!.linkedIssues[0].webUrl"
+                      target="_blank"
+                      icon="i-lucide-circle-dot"
+                      color="neutral"
+                      variant="ghost"
+                      size="xs"
+                      aria-label="Open linked issue"
+                    />
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <p
+                    class="min-w-0 truncate font-mono text-xs text-dimmed"
+                    :title="wt.path"
+                  >
+                    {{ wt.path }}
+                  </p>
+                  <UButton
+                    :icon="copiedPath === wt.path ? 'i-lucide-check' : 'i-lucide-copy'"
+                    :color="copiedPath === wt.path ? 'success' : 'neutral'"
                     variant="ghost"
                     size="xs"
-                    aria-label="Open linked issue"
+                    class="shrink-0"
+                    aria-label="Copy worktree path"
+                    @click="copyPath(wt.path)"
                   />
                 </div>
               </div>
-              <div class="flex items-center gap-1">
-                <p
-                  class="min-w-0 truncate font-mono text-xs text-dimmed"
-                  :title="wt.path"
-                >
-                  {{ wt.path }}
-                </p>
-                <UButton
-                  :icon="copiedPath === wt.path ? 'i-lucide-check' : 'i-lucide-copy'"
-                  :color="copiedPath === wt.path ? 'success' : 'neutral'"
-                  variant="ghost"
-                  size="xs"
-                  class="shrink-0"
-                  aria-label="Copy worktree path"
-                  @click="copyPath(wt.path)"
-                />
-                <UButton
-                  icon="i-lucide-eye-off"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  class="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Hide worktree"
-                  @click="hideWorktree(wt.path)"
-                />
-              </div>
+              <UButton
+                icon="i-lucide-eye-off"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                class="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Hide worktree"
+                @click="hideWorktree(wt.path)"
+              />
             </div>
           </div>
 

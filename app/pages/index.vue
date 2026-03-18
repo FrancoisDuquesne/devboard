@@ -94,6 +94,15 @@ onMounted(async () => {
   showWelcomeIfFirstRun();
 });
 
+watch(worktreesEnabled, (val) => {
+  if (val) {
+    fetchWorktrees();
+    startWorktreesRefresh();
+  } else {
+    stopWorktreesRefresh();
+  }
+});
+
 onUnmounted(() => {
   stopAutoRefresh();
   stopTodosRefresh();
@@ -104,7 +113,12 @@ onUnmounted(() => {
 // Keyboard shortcuts
 defineShortcuts({
   r: () => {
-    if (!drawerOpen.value && !issueDrawerOpen.value && !todoPanelOpen.value && !worktreePanelOpen.value) {
+    if (
+      !drawerOpen.value &&
+      !issueDrawerOpen.value &&
+      !todoPanelOpen.value &&
+      !worktreePanelOpen.value
+    ) {
       fetchMrs();
       fetchTodos();
       fetchMentionMrs();

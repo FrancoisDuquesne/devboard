@@ -1,4 +1,4 @@
-import { getWorktrees } from "../utils/worktree";
+import { getWorktrees } from "~~/server/utils/worktree";
 
 export default defineEventHandler(async () => {
   return await getWorktrees();

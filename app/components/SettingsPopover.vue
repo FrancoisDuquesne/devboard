@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { status, loading: connectionLoading, checkConnection } = useGitlabAuth();
 const { autoRefreshInterval } = usePreferences();
+const { enabled: worktreesEnabled } = useWorktrees();
 const { helpOpen } = useHelp();
 const { resetWelcome } = useOnboarding();
 const colorMode = useColorMode();
@@ -72,6 +73,21 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
             aria-label="Auto-refresh interval"
             class="w-full"
           />
+        </div>
+
+        <USeparator />
+
+        <!-- Worktrees -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium text-dimmed">Worktrees</p>
+            <USwitch
+              v-model="worktreesEnabled"
+              size="sm"
+              aria-label="Enable worktrees"
+            />
+          </div>
+          <WorktreeScanDirsConfig v-if="worktreesEnabled" />
         </div>
 
         <USeparator />

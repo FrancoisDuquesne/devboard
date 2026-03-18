@@ -49,6 +49,12 @@ const {
   panelOpen: worktreePanelOpen,
   worktrees: worktreeList,
 } = useWorktrees();
+const { hiddenWorktreePaths } = usePreferences();
+const visibleWorktreeCount = computed(
+  () =>
+    worktreeList.value.filter((wt) => !hiddenWorktreePaths.value.includes(wt.path))
+      .length,
+);
 
 // Filter and sort MRs before feeding to graph
 const filteredAndSortedMrs = computed(() => {
@@ -210,16 +216,6 @@ watch(
   },
 );
 
-const sortOptions = [
-  { label: "Updated", value: "updated" },
-  { label: "Created", value: "created" },
-  { label: "Title", value: "title" },
-];
-
-function toggleSortDirection() {
-  sortDirection.value = sortDirection.value === "desc" ? "asc" : "desc";
-}
-
 // Only fitView when node set structurally changes (added/removed), not on data updates
 const nodeIdSignature = computed(() =>
   nodes.value
@@ -265,7 +261,7 @@ const isFiltered = computed(
     <!-- Top-left: branding + graph controls pill -->
     <div class="absolute top-2 left-2 sm:top-4 sm:left-4 z-10">
       <nav
-        class="flex items-center gap-1.5 rounded-lg border border-muted bg-default/90 px-2 sm:px-3 py-1.5 backdrop-blur"
+        class="flex items-center gap-1.5 rounded-lg border border-muted bg-default/90 px-2 sm:px-3 py-1.5 backdrop-blur shadow-lg"
       >
         <div class="flex items-center gap-1.5 px-1">
           <UIcon name="i-lucide-workflow" class="size-4 text-primary" />
@@ -275,33 +271,13 @@ const isFiltered = computed(
         <USeparator orientation="vertical" class="h-5" />
 
         <GraphMrGraphToolbar :projects="projects" />
-
-        <USeparator orientation="vertical" class="hidden h-5 sm:block" />
-
-        <UFieldGroup class="hidden sm:flex">
-          <USelect
-            v-model="sortField"
-            :items="sortOptions"
-            value-key="value"
-            variant="soft"
-            aria-label="Sort by"
-            class="w-28"
-          />
-          <UButton
-            :icon="sortDirection === 'desc' ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-narrow-wide'"
-            variant="soft"
-            color="neutral"
-            :aria-label="sortDirection === 'desc' ? 'Sort ascending' : 'Sort descending'"
-            @click="toggleSortDirection"
-          />
-        </UFieldGroup>
       </nav>
     </div>
 
     <!-- Top-right: search, notifications, settings -->
     <div class="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
       <nav
-        class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 px-2 py-1.5 backdrop-blur"
+        class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 px-2 py-1.5 backdrop-blur shadow-lg"
       >
         <SearchPalette />
 
@@ -314,10 +290,10 @@ const isFiltered = computed(
             @click="worktreePanelOpen = !worktreePanelOpen"
           />
           <span
-            v-if="worktreeList.length > 0"
+            v-if="visibleWorktreeCount > 0"
             class="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-info text-white text-xs font-bold leading-none pointer-events-none"
           >
-            {{ worktreeList.length > 9 ? "9+" : worktreeList.length }}
+            {{ visibleWorktreeCount > 9 ? "9+" : visibleWorktreeCount }}
           </span>
         </div>
 
@@ -473,7 +449,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
 
       <Panel position="bottom-right">
         <div
-          class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 p-1 backdrop-blur"
+          class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 p-1 backdrop-blur shadow-lg"
         >
           <UTooltip
             :text="status?.connected ? `Connected to ${status.host} as ${status.username}` : status?.error || 'Disconnected from GitLab'"
@@ -545,7 +521,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
 
       <Panel position="bottom-left">
         <div
-          class="flex flex-col gap-y-1 rounded-lg border border-muted bg-default/90 px-3 py-1.5 text-xs text-dimmed backdrop-blur"
+          class="flex flex-col gap-y-1 rounded-lg border border-muted bg-default/90 px-3 py-1.5 text-xs text-dimmed backdrop-blur shadow-lg"
         >
           <template v-if="hasEdges">
             <span class="font-medium">Edges:</span>
