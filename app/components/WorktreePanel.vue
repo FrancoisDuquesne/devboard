@@ -10,6 +10,7 @@ const { worktrees, worktreesByRepo, panelOpen } = useWorktrees();
 const { mrs } = useGitlab();
 const { copy } = useClipboard();
 const copiedPath = ref<string | null>(null);
+const searchQuery = ref("");
 
 function copyPath(path: string) {
   copy(path);
@@ -25,6 +26,29 @@ const branchMrMap = computed(() => {
     map.set(mr.sourceBranch, mr);
   }
   return map;
+});
+
+const visibleWorktreesByRepo = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  if (!query) return worktreesByRepo.value;
+  const map = new Map<string, Worktree[]>();
+  for (const [repo, wts] of worktreesByRepo.value) {
+    const visible = wts.filter((wt) => {
+      const matchesBranch = wt.branch?.toLowerCase().includes(query);
+      const matchesPath = wt.path.toLowerCase().includes(query);
+      return matchesBranch || matchesPath;
+    });
+    if (visible.length > 0) map.set(repo, visible);
+  }
+  return map;
+});
+
+const visibleWorktreeCount = computed(() => {
+  let count = 0;
+  for (const wts of visibleWorktreesByRepo.value.values()) {
+    count += wts.length;
+  }
+  return count;
 });
 
 function getMrForBranch(branch: string | null): DevBoardMR | undefined {
@@ -48,7 +72,7 @@ function onNavigateMr(mr: DevBoardMR) {
           color="primary"
           variant="subtle"
           size="sm"
-          :label="String(worktrees.length)"
+          :label="String(visibleWorktreeCount)"
         />
       </div>
     </template>
@@ -68,8 +92,15 @@ function onNavigateMr(mr: DevBoardMR) {
         </div>
 
         <template v-else>
+          <UInput
+            v-model="searchQuery"
+            placeholder="Filter worktrees..."
+            icon="i-lucide-search"
+            size="sm"
+            class="mb-2"
+          />
           <div
-            v-for="[repoName, repoWorktrees] in worktreesByRepo"
+            v-for="[repoName, repoWorktrees] in visibleWorktreesByRepo"
             :key="repoName"
             class="flex flex-col gap-1"
           >
