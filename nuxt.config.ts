@@ -14,7 +14,16 @@ export default defineNuxtConfig({
   modules: ["@nuxt/ui"],
   ui: {
     theme: {
-      colors: ["primary", "secondary", "success", "info", "warning", "error", "neutral", "filter"],
+      colors: [
+        "primary",
+        "secondary",
+        "success",
+        "info",
+        "warning",
+        "error",
+        "neutral",
+        "filter",
+      ],
     },
   },
   app: {
