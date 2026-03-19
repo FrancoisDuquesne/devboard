@@ -6,9 +6,9 @@
 
 </div>
 
-<img src="docs/screenshots/graph-light.png" alt="DevBoard — interactive dependency graph" width="100%" />
-
 ---
+
+DevBoard connects to your GitLab instance and renders merge requests, issues, and todos as an interactive dependency graph. It highlights what needs your attention — blocked pipelines, pending reviews, unresolved threads — so you can focus on what matters. Everything runs as a lightweight Nuxt SPA with no database required.
 
 ## Features
 
