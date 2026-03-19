@@ -103,7 +103,7 @@ async function run() {
 
     // ── Scene 3: Detail drawer — click MR !42 node ──────────────
     await screenshot("drawer-open.png", async (page) => {
-      await navigate(page, { theme: "dark" });
+      await navigate(page, { theme: "light" });
       await waitForGraph(page);
       const node = page.locator('[data-id="1042"]');
       if (!(await node.count())) {
@@ -115,7 +115,7 @@ async function run() {
 
     // ── Scene 4: Search palette ──────────────────────────────────
     await screenshot("search-open.png", async (page) => {
-      await navigate(page, { theme: "dark" });
+      await navigate(page, { theme: "light" });
       await waitForGraph(page);
       await page.keyboard.press("Control+k");
       await page.waitForTimeout(500);
@@ -125,7 +125,7 @@ async function run() {
 
     // ── Scene 5: Todo panel ──────────────────────────────────────
     await screenshot("todo-panel.png", async (page) => {
-      await navigate(page, { theme: "dark" });
+      await navigate(page, { theme: "light" });
       await waitForGraph(page);
       await page.keyboard.press("t");
       await page.waitForTimeout(800);
@@ -133,7 +133,7 @@ async function run() {
 
     // ── Scene 6: Worktree panel ──────────────────────────────────
     await screenshot("worktree-panel.png", async (page) => {
-      await navigate(page, { theme: "dark" });
+      await navigate(page, { theme: "light" });
       await waitForGraph(page);
       await page.keyboard.press("w");
       await page.waitForTimeout(800);
@@ -141,7 +141,7 @@ async function run() {
 
     // ── Scene 7: Help modal ──────────────────────────────────────
     await screenshot("help.png", async (page) => {
-      await navigate(page, { theme: "dark" });
+      await navigate(page, { theme: "light" });
       await waitForGraph(page);
       await page.keyboard.press("?");
       await page.waitForTimeout(600);
@@ -149,7 +149,7 @@ async function run() {
 
     // ── Scene 8: Annotation toolbar with a sticky note ──────────
     await screenshot("annotations.png", async (page) => {
-      await navigate(page, { theme: "dark" });
+      await navigate(page, { theme: "light" });
       await waitForGraph(page);
       // Select sticky note tool via keyboard
       await page.keyboard.press("n");
