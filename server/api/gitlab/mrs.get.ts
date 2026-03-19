@@ -25,7 +25,10 @@ async function getProjectPath(projectId: number): Promise<string> {
 }
 
 export default defineEventHandler(async () => {
-  const [authoredMrs, reviewingMrs] = await Promise.all([
+  // Fetch current user to query reviewer MRs
+  const user = await gitlabFetch<{ username: string }>("/user");
+
+  const [authoredMrs, assignedMrs, reviewerMrs] = await Promise.all([
     gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
       scope: "created_by_me",
       state: "opened",
@@ -34,10 +37,15 @@ export default defineEventHandler(async () => {
       scope: "assigned_to_me",
       state: "opened",
     }),
+    gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
+      scope: "all",
+      reviewer_username: user.username,
+      state: "opened",
+    }),
   ]);
 
   const mrMap = new Map<number, GitLabMergeRequest>();
-  for (const mr of [...authoredMrs, ...reviewingMrs]) {
+  for (const mr of [...authoredMrs, ...assignedMrs, ...reviewerMrs]) {
     mrMap.set(mr.id, mr);
   }
 

@@ -12,6 +12,13 @@ const props = defineProps<{
 const now = useNow();
 const { markAsDone } = useTodos();
 
+const { status } = useGitlabAuth();
+
+const todoUrl = computed(() => {
+  if (!status.value?.host) return null;
+  return `https://${status.value.host}/dashboard/todos`;
+});
+
 const isIssue = computed(() => props.data.targetType === "Issue");
 const isMr = computed(() => props.data.targetType === "MergeRequest");
 
@@ -29,9 +36,9 @@ const targetIssue = computed<DevBoardIssue | null>(() => {
   };
 });
 
-function openTarget(event: MouseEvent) {
+function openTodoPage(event: MouseEvent) {
   event.stopPropagation();
-  safeOpen(props.data.targetUrl);
+  if (todoUrl.value) safeOpen(todoUrl.value);
 }
 </script>
 
@@ -39,7 +46,7 @@ function openTarget(event: MouseEvent) {
   <div
     class="cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
     :style="{ width: `${TODO_NODE_WIDTH}px` }"
-    @click.stop="openTarget"
+    @click.stop="openTodoPage"
   >
     <Handle type="target" :position="Position.Top" class="invisible!" />
     <div class="flex flex-col gap-1 p-3">
