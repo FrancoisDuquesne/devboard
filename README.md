@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/screenshots/graph-dark.png" alt="DevBoard — interactive dependency graph" width="100%" />
+<img src="docs/screenshots/graph-light.png" alt="DevBoard — interactive dependency graph" width="100%" />
 
 # DevBoard
 
@@ -51,6 +51,8 @@ See your local git worktrees alongside MRs. DevBoard scans configured directorie
 ### Annotations & drawing tools
 
 Add sticky notes and freehand drawings directly on the board. Notes support markdown rendering, resizing, and color-coded backgrounds. Drawing tools include freehand, arrows, and rectangles with color and stroke width options. An eraser tool lets you click any drawing to delete it. Everything persists locally.
+
+<img src="docs/screenshots/annotations.png" alt="Annotation toolbar with sticky note" width="100%" />
 
 ### And more
 
