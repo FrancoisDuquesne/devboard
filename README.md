@@ -1,18 +1,12 @@
 <div align="center">
 
-<img src="docs/screenshots/graph-light.png" alt="DevBoard — interactive dependency graph" width="100%" />
+<img src="docs/hero.png" alt="DevBoard — Real-time GitLab dashboard with interactive dependency graphs" width="100%" />
 
-# DevBoard
-
-**A real-time GitLab merge request dashboard with interactive dependency graphs**
-
-[![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt.js&logoColor=white)](https://nuxt.com)
-[![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 </div>
+
+<img src="docs/screenshots/graph-light.png" alt="DevBoard — interactive dependency graph" width="100%" />
 
 ---
 
@@ -22,7 +16,7 @@
 
 Merge requests, issues, and todos rendered as draggable nodes with color-coded edges showing dependencies, linked issues, and todo targets. Green = healthy, red (animated) = blocked, amber (animated) = in-progress.
 
-<img src="docs/screenshots/graph-light.png" alt="Graph view — light mode" width="100%" />
+<img src="docs/screenshots/graph-dark.png" alt="Graph view — dark mode" width="100%" />
 
 ### Detail drawer
 

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { cpSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright";
 
@@ -171,13 +171,131 @@ async function run() {
       await page.keyboard.press("p");
       await page.waitForTimeout(400);
     });
+    // ── Scene 9: Hero composite — dashboard behind gradient ─────
+    console.log("Generating hero image...");
+    const bgPath = join(WORK_DIR, "graph-light.png");
+    const bgBase64 = readFileSync(bgPath).toString("base64");
+
+    const heroHtml = `<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1440px;
+    height: 400px;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    position: relative;
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+    background: url('data:image/png;base64,${bgBase64}') top center / cover no-repeat;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 23, 42, 0.92) 0%,
+      rgba(15, 23, 42, 0.80) 35%,
+      rgba(15, 23, 42, 0.45) 65%,
+      rgba(15, 23, 42, 0.10) 85%,
+      transparent 100%
+    );
+  }
+  .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 72px;
+  }
+  .title {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -3px;
+    line-height: 1;
+  }
+  .title .dev { color: #f8fafc; }
+  .title .board {
+    background: linear-gradient(90deg, #22d3ee, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .tagline {
+    margin-top: 16px;
+    font-size: 20px;
+    font-weight: 400;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+  .pills {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .pill {
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    backdrop-filter: blur(8px);
+  }
+  .pill.nuxt { color: #00DC82; }
+  .pill.vue { color: #4FC08D; }
+  .pill.ts { color: #3178C6; }
+  .pill.tw { color: #38BDF8; }
+  .pill.vf { color: #22d3ee; }
+  .accent-line {
+    margin-top: 28px;
+    width: 320px;
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, #22d3ee, #10b981);
+    opacity: 0.4;
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="overlay"></div>
+  <div class="content">
+    <div class="title"><span class="dev">Dev</span><span class="board">Board</span></div>
+    <div class="tagline">Real-time GitLab dashboard with interactive dependency graphs</div>
+    <div class="pills">
+      <span class="pill nuxt">Nuxt 4</span>
+      <span class="pill vue">Vue 3</span>
+      <span class="pill ts">TypeScript</span>
+      <span class="pill tw">Tailwind 4</span>
+      <span class="pill vf">Vue Flow</span>
+    </div>
+    <div class="accent-line"></div>
+  </div>
+</body>
+</html>`;
+
+    const heroPage = await context.newPage();
+    await heroPage.setContent(heroHtml, { waitUntil: "load" });
+    await heroPage.setViewportSize({ width: 1440, height: 400 });
+    await heroPage.screenshot({ path: join(WORK_DIR, "hero.png"), fullPage: false });
+    console.log("  ✓ hero.png");
+    await heroPage.close();
   } finally {
     await browser.close();
   }
 
   // Clean output dir and copy fresh screenshots
   rmSync(OUT_DIR, { recursive: true, force: true });
+  const heroOutDir = join(import.meta.dirname, "..", "docs");
   cpSync(WORK_DIR, OUT_DIR, { recursive: true });
+  // Move hero.png up to docs/ (not in screenshots/)
+  cpSync(join(OUT_DIR, "hero.png"), join(heroOutDir, "hero.png"));
+  rmSync(join(OUT_DIR, "hero.png"));
   console.log(`\nAll screenshots saved to ${OUT_DIR}`);
 }
 
