@@ -13,8 +13,36 @@ const {
   graphGroupBy,
   sortField,
   sortDirection,
+  mrScopes,
+  fetchTodosEnabled,
+  fetchIssuesEnabled,
   resetAllFilters,
 } = usePreferences();
+
+const availableNodeTypes = computed(() =>
+  nodeTypeItems.filter((item) => {
+    if (item.value === "mr") return mrScopes.value.length > 0;
+    if (item.value === "todo") return fetchTodosEnabled.value;
+    if (item.value === "issue") return fetchIssuesEnabled.value;
+    return true;
+  }),
+);
+
+// Clean up nodeTypeFilter when a data source is turned off
+watch(
+  [mrScopes, fetchTodosEnabled, fetchIssuesEnabled],
+  () => {
+    const available = new Set(availableNodeTypes.value.map((i) => i.value));
+    const cleaned = nodeTypeFilter.value.filter((t) => available.has(t));
+    // If all remaining types got removed, select whatever is available
+    if (cleaned.length === 0 && available.size > 0) {
+      nodeTypeFilter.value = [...available];
+    } else if (cleaned.length !== nodeTypeFilter.value.length) {
+      nodeTypeFilter.value = cleaned;
+    }
+  },
+  { deep: true },
+);
 
 const groupByItems: { label: string; value: GraphGroupBy; icon: string }[] = [
   { label: "All", value: "none", icon: "i-lucide-layout-list" },
@@ -131,11 +159,11 @@ const activeFilterCount = computed(() => {
           </div>
 
           <!-- Show -->
-          <div>
+          <div v-if="availableNodeTypes.length > 1">
             <p class="mb-1.5 text-xs font-medium text-dimmed">Show</p>
             <UFieldGroup>
               <UButton
-                v-for="item in nodeTypeItems"
+                v-for="item in availableNodeTypes"
                 :key="item.value"
                 :icon="item.icon"
                 :variant="nodeTypeFilter.includes(item.value) ? 'soft' : 'outline'"
@@ -272,20 +300,22 @@ const activeFilterCount = computed(() => {
       </template>
     </UPopover>
 
-    <USeparator orientation="vertical" class="hidden h-5 sm:block" />
+    <template v-if="availableNodeTypes.length > 1">
+      <USeparator orientation="vertical" class="hidden h-5 sm:block" />
 
-    <UFieldGroup class="hidden sm:flex">
-      <UButton
-        v-for="item in nodeTypeItems"
-        :key="item.value"
-        :icon="item.icon"
-        :variant="nodeTypeFilter.includes(item.value) ? 'soft' : 'outline'"
-        :color="nodeTypeFilter.includes(item.value) ? 'primary' : 'neutral'"
-        @click="toggleNodeType(item.value)"
-      >
-        {{ item.label }}
-      </UButton>
-    </UFieldGroup>
+      <UFieldGroup class="hidden sm:flex">
+        <UButton
+          v-for="item in availableNodeTypes"
+          :key="item.value"
+          :icon="item.icon"
+          :variant="nodeTypeFilter.includes(item.value) ? 'soft' : 'outline'"
+          :color="nodeTypeFilter.includes(item.value) ? 'primary' : 'neutral'"
+          @click="toggleNodeType(item.value)"
+        >
+          {{ item.label }}
+        </UButton>
+      </UFieldGroup>
+    </template>
 
     <USeparator orientation="vertical" class="hidden h-5 sm:block" />
 

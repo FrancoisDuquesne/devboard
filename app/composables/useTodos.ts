@@ -12,8 +12,10 @@ let intervalWatcherActive = false;
 let todosController: AbortController | null = null;
 let mentionController: AbortController | null = null;
 
+let todosEnabledWatcherActive = false;
+
 export function useTodos() {
-  const { autoRefreshInterval } = usePreferences();
+  const { autoRefreshInterval, fetchTodosEnabled } = usePreferences();
   const toast = useToast();
 
   if (!intervalWatcherActive) {
@@ -32,7 +34,25 @@ export function useTodos() {
     });
   }
 
+  // Re-fetch or clear when toggle changes
+  if (!todosEnabledWatcherActive) {
+    todosEnabledWatcherActive = true;
+    watch(fetchTodosEnabled, (enabled) => {
+      if (enabled) {
+        fetchTodos();
+        fetchMentionMrs();
+      } else {
+        todos.value = [];
+        mentionMrs.value = [];
+      }
+    });
+  }
+
   async function fetchTodos() {
+    if (!fetchTodosEnabled.value) {
+      todos.value = [];
+      return;
+    }
     if (todosController) todosController.abort();
     todosController = new AbortController();
     const signal = todosController.signal;
@@ -106,6 +126,10 @@ export function useTodos() {
   }
 
   async function fetchMentionMrs() {
+    if (!fetchTodosEnabled.value) {
+      mentionMrs.value = [];
+      return;
+    }
     if (mentionController) mentionController.abort();
     mentionController = new AbortController();
     const signal = mentionController.signal;

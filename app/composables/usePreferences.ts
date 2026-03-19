@@ -3,6 +3,7 @@ import type {
   GraphGroupBy,
   GraphNodeType,
   MrRole,
+  MrScope,
   MrSortDirection,
   MrSortField,
   PipelineStatus,
@@ -30,6 +31,13 @@ const hiddenWorktreePaths = useLocalStorage<string[]>(
   "devboard:hidden-worktree-paths",
   [],
 );
+const mrScopes = useLocalStorage<MrScope[]>("devboard:mr-scopes", [
+  "authored",
+  "assigned",
+  "reviewer",
+]);
+const fetchTodosEnabled = useLocalStorage<boolean>("devboard:fetch-todos", true);
+const fetchIssuesEnabled = useLocalStorage<boolean>("devboard:fetch-issues", true);
 
 export function usePreferences() {
   function resetAllFilters() {
@@ -60,6 +68,9 @@ export function usePreferences() {
     hiddenWorktreePaths,
     hideWorktree,
     unhideWorktree,
+    mrScopes,
+    fetchTodosEnabled,
+    fetchIssuesEnabled,
     resetAllFilters,
   };
 }

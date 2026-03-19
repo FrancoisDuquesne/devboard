@@ -8,8 +8,10 @@ let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let intervalWatcherActive = false;
 let fetchController: AbortController | null = null;
 
+let scopesWatcherActive = false;
+
 export function useGitlab() {
-  const { autoRefreshInterval } = usePreferences();
+  const { autoRefreshInterval, mrScopes } = usePreferences();
   const toast = useToast();
 
   // Restart auto-refresh when interval setting changes
@@ -26,9 +28,20 @@ export function useGitlab() {
     });
   }
 
+  // Re-fetch when MR scopes change
+  if (!scopesWatcherActive) {
+    scopesWatcherActive = true;
+    watch(mrScopes, () => fetchMrs(), { deep: true });
+  }
+
   const { status: authStatus, checkConnection } = useGitlabAuth();
 
   async function fetchMrs() {
+    if (mrScopes.value.length === 0) {
+      mrs.value = [];
+      return;
+    }
+
     if (fetchController) fetchController.abort();
     fetchController = new AbortController();
     const signal = fetchController.signal;
@@ -37,7 +50,10 @@ export function useGitlab() {
     error.value = null;
     try {
       const previous = mrs.value;
-      const fresh = await $fetch<DevBoardMR[]>("/api/gitlab/mrs", { signal });
+      const fresh = await $fetch<DevBoardMR[]>("/api/gitlab/mrs", {
+        signal,
+        params: { scopes: mrScopes.value.join(",") },
+      });
 
       // Detect changes for toast notifications
       if (previous.length > 0) {

@@ -1,5 +1,10 @@
+<script setup lang="ts">
+const tooltip = { delayDuration: 150 };
+const toaster = { expand: false };
+</script>
+
 <template>
-  <UApp :tooltip="{delayDuration: 150}">
+  <UApp :tooltip="tooltip" :toaster="toaster">
     <NuxtLoadingIndicator />
     <NuxtLayout>
       <UMain class="relative">

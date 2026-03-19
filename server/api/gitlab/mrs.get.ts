@@ -24,29 +24,57 @@ async function getProjectPath(projectId: number): Promise<string> {
   return project.path_with_namespace;
 }
 
-export default defineEventHandler(async () => {
-  // Fetch current user to query reviewer MRs
-  const user = await gitlabFetch<{ username: string }>("/user");
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event);
+  const scopesParam =
+    typeof query.scopes === "string" ? query.scopes : "authored,assigned,reviewer";
+  const scopes = scopesParam
+    .split(",")
+    .filter((s): s is "authored" | "assigned" | "reviewer" =>
+      ["authored", "assigned", "reviewer"].includes(s),
+    );
 
-  const [authoredMrs, assignedMrs, reviewerMrs] = await Promise.all([
-    gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
-      scope: "created_by_me",
-      state: "opened",
-    }),
-    gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
-      scope: "assigned_to_me",
-      state: "opened",
-    }),
-    gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
-      scope: "all",
-      reviewer_username: user.username,
-      state: "opened",
-    }),
-  ]);
+  if (scopes.length === 0) return [];
+
+  // Fetch current user only if reviewer scope is needed
+  const needsUser = scopes.includes("reviewer");
+  const user = needsUser ? await gitlabFetch<{ username: string }>("/user") : null;
+
+  const fetches: Promise<GitLabMergeRequest[]>[] = [];
+
+  if (scopes.includes("authored")) {
+    fetches.push(
+      gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
+        scope: "created_by_me",
+        state: "opened",
+      }),
+    );
+  }
+  if (scopes.includes("assigned")) {
+    fetches.push(
+      gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
+        scope: "assigned_to_me",
+        state: "opened",
+      }),
+    );
+  }
+  if (scopes.includes("reviewer") && user) {
+    fetches.push(
+      gitlabFetchAllPages<GitLabMergeRequest>("/merge_requests", {
+        scope: "all",
+        reviewer_username: user.username,
+        state: "opened",
+      }),
+    );
+  }
+
+  const scopeResults = await Promise.all(fetches);
 
   const mrMap = new Map<number, GitLabMergeRequest>();
-  for (const mr of [...authoredMrs, ...assignedMrs, ...reviewerMrs]) {
-    mrMap.set(mr.id, mr);
+  for (const scopeMrs of scopeResults) {
+    for (const mr of scopeMrs) {
+      mrMap.set(mr.id, mr);
+    }
   }
 
   const uniqueMrs = Array.from(mrMap.values());

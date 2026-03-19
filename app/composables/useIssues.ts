@@ -8,8 +8,10 @@ let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let intervalWatcherActive = false;
 let fetchController: AbortController | null = null;
 
+let issuesEnabledWatcherActive = false;
+
 export function useIssues() {
-  const { autoRefreshInterval } = usePreferences();
+  const { autoRefreshInterval, fetchIssuesEnabled } = usePreferences();
 
   if (!intervalWatcherActive) {
     intervalWatcherActive = true;
@@ -24,7 +26,23 @@ export function useIssues() {
     });
   }
 
+  // Re-fetch or clear when toggle changes
+  if (!issuesEnabledWatcherActive) {
+    issuesEnabledWatcherActive = true;
+    watch(fetchIssuesEnabled, (enabled) => {
+      if (enabled) {
+        fetchIssues();
+      } else {
+        issues.value = [];
+      }
+    });
+  }
+
   async function fetchIssues() {
+    if (!fetchIssuesEnabled.value) {
+      issues.value = [];
+      return;
+    }
     if (fetchController) fetchController.abort();
     fetchController = new AbortController();
     const signal = fetchController.signal;
