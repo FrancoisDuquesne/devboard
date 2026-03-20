@@ -103,7 +103,7 @@ export interface GitLabTodo {
   target: { id: number; iid: number; title: string; state: string };
   body: string;
   author: GitLabUser;
-  project: { id: number; name: string; path_with_namespace: string };
+  project: { id: number; name: string; path_with_namespace: string } | null;
   target_url: string;
   created_at: string;
 }
