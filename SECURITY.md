@@ -4,8 +4,7 @@
 
 If you discover a security vulnerability in DevBoard, please report it responsibly:
 
-- **Preferred**: open a [GitHub Security Advisory](https://github.com/FrancoisDuquesne/devboard/security/advisories/new) (private by default).
-- **Alternative**: email **francois.duquesne@proton.me** with details.
+Open a [GitHub Security Advisory](https://github.com/FrancoisDuquesne/devboard/security/advisories/new) (private by default).
 
 Please **do not** open a public issue for security vulnerabilities.
 
