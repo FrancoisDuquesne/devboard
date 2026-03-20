@@ -108,6 +108,7 @@ app/
 │   └── useNow.ts                  # Reactive current time
 ├── providers/                     # Provider metadata (see above)
 ├── types/                         # TypeScript type definitions
+│   ├── annotations.ts             # Annotation types (sticky notes, drawings)
 │   ├── devboard.ts                # Normalized types (DevBoardMR, DevBoardIssue, etc.)
 │   ├── provider.ts                # ProviderId, ProviderMeta
 │   ├── gitlab.ts                  # GitLab API response types

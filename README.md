@@ -112,7 +112,7 @@ Try DevBoard without any provider connection — realistic mock data included:
 npm run demo
 ```
 
-This starts the dev server with pre-built fixtures: 8 MRs across 3 projects with a dependency chain, issues, and todos.
+This starts the dev server with pre-built fixtures: 11 MRs across 3 projects with dependency chains, issues, and todos.
 
 ---
 
@@ -162,7 +162,10 @@ app/                          # Frontend (Vue 3 + Composition API)
 ├── pages/index.vue           # Full-screen graph dashboard
 ├── providers/                # Provider metadata (GitLab, GitHub)
 ├── components/
-│   ├── graph/                # Graph node components (MR, issue, todo, group, phantom)
+│   ├── graph/                # Graph node + annotation components
+│   │   ├── MrGraphNode.vue       # MR/PR node (custom Vue Flow node)
+│   │   ├── IssueGraphNode.vue    # Issue node
+│   │   ├── TodoGraphNode.vue     # Todo/notification node
 │   │   ├── StickyNoteNode.vue    # Draggable sticky note with markdown toggle
 │   │   ├── DrawingLayer.vue      # SVG overlay for freehand/arrow/rectangle drawings
 │   │   └── AnnotationToolbar.vue # Vertical tool picker with color/width pickers
