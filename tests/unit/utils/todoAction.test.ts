@@ -14,15 +14,16 @@ const ALL_ACTIONS: TodoAction[] = [
 ];
 
 describe("todoActionConfig", () => {
-  it("has an entry for every TodoAction", () => {
+  it("covers every TodoAction (no missing keys)", () => {
+    const configKeys = Object.keys(todoActionConfig);
+    expect(configKeys).toHaveLength(ALL_ACTIONS.length);
     for (const action of ALL_ACTIONS) {
       expect(todoActionConfig[action]).toBeDefined();
     }
   });
 
   it("every entry has label, icon, and color", () => {
-    for (const action of ALL_ACTIONS) {
-      const config = todoActionConfig[action];
+    for (const config of Object.values(todoActionConfig)) {
       expect(config.label).toBeTruthy();
       expect(config.icon).toBeTruthy();
       expect(config.color).toBeTruthy();
@@ -30,8 +31,8 @@ describe("todoActionConfig", () => {
   });
 
   it("icons follow i-lucide-* naming", () => {
-    for (const action of ALL_ACTIONS) {
-      expect(todoActionConfig[action].icon).toMatch(/^i-lucide-/);
+    for (const config of Object.values(todoActionConfig)) {
+      expect(config.icon).toMatch(/^i-lucide-/);
     }
   });
 });

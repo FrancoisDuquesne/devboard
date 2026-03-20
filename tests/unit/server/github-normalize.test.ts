@@ -3,10 +3,9 @@ import type {
   GitHubCheckRun,
   GitHubIssue,
   GitHubNotification,
-  GitHubPullRequest,
   GitHubReview,
-  GitHubUser,
 } from "~~/app/types/github";
+import { makeGitHubPr, makeGitHubUser } from "~~/tests/fixtures/github";
 
 // Mock github-auth before importing the module under test
 vi.mock("~~/server/utils/github-auth", () => ({
@@ -21,67 +20,29 @@ const {
   resolvePrStatus,
 } = await import("~~/server/utils/github-normalize");
 
-function makeUser(overrides: Partial<GitHubUser> = {}): GitHubUser {
-  return {
-    id: 1,
-    login: "alice",
-    name: "Alice",
-    avatar_url: "https://img/alice.png",
-    html_url: "https://github.com/alice",
-    ...overrides,
-  };
-}
-
-function makePr(overrides: Partial<GitHubPullRequest> = {}): GitHubPullRequest {
-  return {
-    id: 100,
-    number: 10,
-    title: "Add feature",
-    body: "Some description",
-    state: "open",
-    draft: false,
-    merged: false,
-    merged_at: null,
-    html_url: "https://github.com/org/repo/pull/10",
-    head: {
-      ref: "feature",
-      sha: "abc123",
-      repo: { id: 42, full_name: "org/repo" },
-    },
-    base: {
-      ref: "main",
-      repo: { id: 42, full_name: "org/repo" },
-    },
-    user: makeUser(),
-    requested_reviewers: [],
-    labels: [],
-    mergeable: true,
-    mergeable_state: "clean",
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-01-02T00:00:00Z",
-    ...overrides,
-  };
-}
-
 describe("resolvePrStatus", () => {
   it('returns "merged" when merged', () => {
-    expect(resolvePrStatus(makePr({ merged: true }))).toBe("merged");
+    expect(resolvePrStatus(makeGitHubPr({ merged: true }))).toBe("merged");
   });
 
   it('returns "closed" when state is closed and not merged', () => {
-    expect(resolvePrStatus(makePr({ state: "closed", merged: false }))).toBe("closed");
+    expect(resolvePrStatus(makeGitHubPr({ state: "closed", merged: false }))).toBe(
+      "closed",
+    );
   });
 
   it('returns "draft" when draft', () => {
-    expect(resolvePrStatus(makePr({ draft: true }))).toBe("draft");
+    expect(resolvePrStatus(makeGitHubPr({ draft: true }))).toBe("draft");
   });
 
   it('returns "open" for normal open PR', () => {
-    expect(resolvePrStatus(makePr())).toBe("open");
+    expect(resolvePrStatus(makeGitHubPr())).toBe("open");
   });
 
   it("merged takes precedence over closed", () => {
-    expect(resolvePrStatus(makePr({ state: "closed", merged: true }))).toBe("merged");
+    expect(resolvePrStatus(makeGitHubPr({ state: "closed", merged: true }))).toBe(
+      "merged",
+    );
   });
 });
 
@@ -192,7 +153,7 @@ describe("aggregatePipelineStatus", () => {
 
 describe("normalizePr", () => {
   it("maps basic fields correctly", () => {
-    const result = normalizePr(makePr());
+    const result = normalizePr(makeGitHubPr());
     expect(result.id).toBe(100);
     expect(result.iid).toBe(10);
     expect(result.projectId).toBe(42);
@@ -204,8 +165,8 @@ describe("normalizePr", () => {
   });
 
   it("maps reviewers from requested_reviewers", () => {
-    const pr = makePr({
-      requested_reviewers: [makeUser({ login: "bob", name: "Bob" })],
+    const pr = makeGitHubPr({
+      requested_reviewers: [makeGitHubUser({ login: "bob", name: "Bob" })],
     });
     const result = normalizePr(pr);
     expect(result.reviewers).toHaveLength(1);
@@ -213,15 +174,15 @@ describe("normalizePr", () => {
   });
 
   it("uses login as fallback when name is null", () => {
-    const pr = makePr({
-      user: makeUser({ login: "noname", name: null }),
+    const pr = makeGitHubPr({
+      user: makeGitHubUser({ login: "noname", name: null }),
     });
     const result = normalizePr(pr);
     expect(result.author.name).toBe("noname");
   });
 
   it("maps labels from objects to strings", () => {
-    const pr = makePr({
+    const pr = makeGitHubPr({
       labels: [
         { id: 1, name: "bug", color: "red" },
         { id: 2, name: "P1", color: "orange" },
@@ -232,21 +193,21 @@ describe("normalizePr", () => {
   });
 
   it("detects conflicts from mergeable_state", () => {
-    const pr = makePr({ mergeable_state: "dirty" });
+    const pr = makeGitHubPr({ mergeable_state: "dirty" });
     const result = normalizePr(pr);
     expect(result.hasConflicts).toBe(true);
     expect(result.needsRebase).toBe(true);
   });
 
   it("detects behind state as needsRebase", () => {
-    const pr = makePr({ mergeable_state: "behind" });
+    const pr = makeGitHubPr({ mergeable_state: "behind" });
     const result = normalizePr(pr);
     expect(result.needsRebase).toBe(true);
     expect(result.hasConflicts).toBe(false);
   });
 
   it("defaults body to empty string", () => {
-    const pr = makePr({ body: null });
+    const pr = makeGitHubPr({ body: null });
     const result = normalizePr(pr);
     expect(result.description).toBe("");
   });
@@ -255,18 +216,18 @@ describe("normalizePr", () => {
     const reviews: GitHubReview[] = [
       {
         id: 1,
-        user: makeUser({ login: "bob" }),
+        user: makeGitHubUser({ login: "bob" }),
         state: "APPROVED",
         submitted_at: "",
       },
       {
         id: 2,
-        user: makeUser({ login: "carol" }),
+        user: makeGitHubUser({ login: "carol" }),
         state: "CHANGES_REQUESTED",
         submitted_at: "",
       },
     ];
-    const result = normalizePr(makePr(), reviews);
+    const result = normalizePr(makeGitHubPr(), reviews);
     expect(result.approvals.approved).toBe(1);
     expect(result.approvals.approvedByUsernames).toEqual(["bob"]);
     expect(result.unresolvedThreads).toBe(1);
@@ -276,18 +237,18 @@ describe("normalizePr", () => {
     const reviews: GitHubReview[] = [
       {
         id: 1,
-        user: makeUser({ login: "bob" }),
+        user: makeGitHubUser({ login: "bob" }),
         state: "CHANGES_REQUESTED",
         submitted_at: "",
       },
       {
         id: 2,
-        user: makeUser({ login: "bob" }),
+        user: makeGitHubUser({ login: "bob" }),
         state: "APPROVED",
         submitted_at: "",
       },
     ];
-    const result = normalizePr(makePr(), reviews);
+    const result = normalizePr(makeGitHubPr(), reviews);
     expect(result.approvals.approved).toBe(1);
     expect(result.unresolvedThreads).toBe(0);
   });
@@ -296,37 +257,52 @@ describe("normalizePr", () => {
     const reviews: GitHubReview[] = [
       {
         id: 1,
-        user: makeUser({ login: "bob" }),
+        user: makeGitHubUser({ login: "bob" }),
         state: "COMMENTED",
         submitted_at: "",
       },
       {
         id: 2,
-        user: makeUser({ login: "carol" }),
+        user: makeGitHubUser({ login: "carol" }),
         state: "PENDING",
         submitted_at: "",
       },
     ];
-    const result = normalizePr(makePr(), reviews);
+    const result = normalizePr(makeGitHubPr(), reviews);
     expect(result.approvals.approved).toBe(0);
     expect(result.unresolvedThreads).toBe(0);
   });
 
+  it("DISMISSED review does not count as approved or changes-requested", () => {
+    const reviews: GitHubReview[] = [
+      {
+        id: 1,
+        user: makeGitHubUser({ login: "bob" }),
+        state: "DISMISSED",
+        submitted_at: "",
+      },
+    ];
+    const result = normalizePr(makeGitHubPr(), reviews);
+    expect(result.approvals.approved).toBe(0);
+    expect(result.unresolvedThreads).toBe(0);
+    expect(result.approvals.approvedByUsernames).toEqual([]);
+  });
+
   it("parses dependencies from body", () => {
-    const pr = makePr({ body: "Depends on #42\nDepends on org/other#99" });
+    const pr = makeGitHubPr({ body: "Depends on #42\nDepends on org/other#99" });
     const result = normalizePr(pr);
     expect(result.dependsOnMrs).toEqual(["#42", "org/other#99"]);
   });
 
   it("parses linked issues from body", () => {
-    const pr = makePr({ body: "Closes #5\nClose #12" });
+    const pr = makeGitHubPr({ body: "Closes #5\nClose #12" });
     const result = normalizePr(pr);
     expect(result.linkedIssues).toHaveLength(2);
     expect(result.linkedIssues[0].iid).toBe(5);
   });
 
   it("sets approvals.required to -1 (unknown for GitHub)", () => {
-    const result = normalizePr(makePr());
+    const result = normalizePr(makeGitHubPr());
     expect(result.approvals.required).toBe(-1);
   });
 });
@@ -412,7 +388,7 @@ describe("normalizeGitHubIssue", () => {
     html_url: "https://github.com/org/repo/issues/15",
     labels: [{ id: 1, name: "bug", color: "red" }],
     assignees: [],
-    user: makeUser(),
+    user: makeGitHubUser(),
     repository: { id: 42, full_name: "org/repo" },
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-02T00:00:00Z",

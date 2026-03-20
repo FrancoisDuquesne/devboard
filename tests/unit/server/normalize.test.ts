@@ -3,9 +3,7 @@ import type {
   GitLabApprovals,
   GitLabDiscussion,
   GitLabIssue,
-  GitLabMergeRequest,
   GitLabTodo,
-  GitLabUser,
 } from "~~/app/types/gitlab";
 import {
   normalizeIssue,
@@ -13,74 +11,35 @@ import {
   normalizeTodo,
   resolveMrStatus,
 } from "~~/server/utils/normalize";
-
-function makeUser(overrides: Partial<GitLabUser> = {}): GitLabUser {
-  return {
-    id: 1,
-    username: "alice",
-    name: "Alice",
-    avatar_url: "https://img/alice.png",
-    web_url: "https://gitlab/alice",
-    ...overrides,
-  };
-}
-
-function makeMr(overrides: Partial<GitLabMergeRequest> = {}): GitLabMergeRequest {
-  return {
-    id: 100,
-    iid: 10,
-    title: "Add feature",
-    description: "Some description",
-    state: "opened",
-    draft: false,
-    web_url: "https://gitlab/mr/10",
-    source_branch: "feature",
-    target_branch: "main",
-    author: makeUser(),
-    assignees: [],
-    reviewers: [],
-    labels: ["bug"],
-    has_conflicts: false,
-    merge_status: "can_be_merged",
-    head_pipeline: null,
-    user_notes_count: 0,
-    upvotes: 0,
-    downvotes: 0,
-    project_id: 42,
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-01-02T00:00:00Z",
-    merged_at: null,
-    closed_at: null,
-    references: { full: "org/repo!10", relative: "!10", short: "!10" },
-    ...overrides,
-  };
-}
+import { makeGitLabMr, makeGitLabUser } from "~~/tests/fixtures/gitlab";
 
 describe("resolveMrStatus", () => {
   it('returns "merged" for merged state', () => {
-    expect(resolveMrStatus(makeMr({ state: "merged" }))).toBe("merged");
+    expect(resolveMrStatus(makeGitLabMr({ state: "merged" }))).toBe("merged");
   });
 
   it('returns "closed" for closed state', () => {
-    expect(resolveMrStatus(makeMr({ state: "closed" }))).toBe("closed");
+    expect(resolveMrStatus(makeGitLabMr({ state: "closed" }))).toBe("closed");
   });
 
   it('returns "draft" when draft is true', () => {
-    expect(resolveMrStatus(makeMr({ draft: true }))).toBe("draft");
+    expect(resolveMrStatus(makeGitLabMr({ draft: true }))).toBe("draft");
   });
 
   it('returns "open" for a non-draft opened MR', () => {
-    expect(resolveMrStatus(makeMr())).toBe("open");
+    expect(resolveMrStatus(makeGitLabMr())).toBe("open");
   });
 
   it("merged takes precedence over draft", () => {
-    expect(resolveMrStatus(makeMr({ state: "merged", draft: true }))).toBe("merged");
+    expect(resolveMrStatus(makeGitLabMr({ state: "merged", draft: true }))).toBe(
+      "merged",
+    );
   });
 });
 
 describe("normalizeMr", () => {
   it("maps basic fields correctly", () => {
-    const mr = makeMr();
+    const mr = makeGitLabMr();
     const result = normalizeMr(mr, "org/repo");
 
     expect(result.id).toBe(100);
@@ -97,7 +56,7 @@ describe("normalizeMr", () => {
   });
 
   it("maps author", () => {
-    const result = normalizeMr(makeMr(), "org/repo");
+    const result = normalizeMr(makeGitLabMr(), "org/repo");
     expect(result.author).toEqual({
       username: "alice",
       name: "Alice",
@@ -106,8 +65,8 @@ describe("normalizeMr", () => {
   });
 
   it("maps reviewers", () => {
-    const mr = makeMr({
-      reviewers: [makeUser({ username: "bob", name: "Bob" })],
+    const mr = makeGitLabMr({
+      reviewers: [makeGitLabUser({ username: "bob", name: "Bob" })],
     });
     const result = normalizeMr(mr, "org/repo");
     expect(result.reviewers).toHaveLength(1);
@@ -115,13 +74,13 @@ describe("normalizeMr", () => {
   });
 
   it("defaults description to empty string when null", () => {
-    const mr = makeMr({ description: null as unknown as string });
+    const mr = makeGitLabMr({ description: null });
     const result = normalizeMr(mr, "org/repo");
     expect(result.description).toBe("");
   });
 
   it("maps pipeline status from head_pipeline", () => {
-    const mr = makeMr({
+    const mr = makeGitLabMr({
       head_pipeline: {
         id: 1,
         iid: 1,
@@ -140,7 +99,7 @@ describe("normalizeMr", () => {
   });
 
   it("pipeline is null when head_pipeline is missing", () => {
-    const result = normalizeMr(makeMr(), "org/repo");
+    const result = normalizeMr(makeGitLabMr(), "org/repo");
     expect(result.pipeline.status).toBeNull();
     expect(result.pipeline.webUrl).toBeNull();
   });
@@ -163,12 +122,12 @@ describe("normalizeMr", () => {
         ],
       },
     ];
-    const result = normalizeMr(makeMr(), "org/repo", undefined, discussions);
+    const result = normalizeMr(makeGitLabMr(), "org/repo", undefined, discussions);
     expect(result.unresolvedThreads).toBe(2); // d1 and d3
   });
 
   it("unresolvedThreads is 0 when no discussions", () => {
-    const result = normalizeMr(makeMr(), "org/repo");
+    const result = normalizeMr(makeGitLabMr(), "org/repo");
     expect(result.unresolvedThreads).toBe(0);
   });
 
@@ -177,29 +136,31 @@ describe("normalizeMr", () => {
       approved: true,
       approvals_required: 2,
       approvals_left: 1,
-      approved_by: [{ user: makeUser({ username: "bob" }) }],
+      approved_by: [{ user: makeGitLabUser({ username: "bob" }) }],
     };
-    const result = normalizeMr(makeMr(), "org/repo", approvals);
+    const result = normalizeMr(makeGitLabMr(), "org/repo", approvals);
     expect(result.approvals.approved).toBe(1);
     expect(result.approvals.required).toBe(2);
     expect(result.approvals.approvedByUsernames).toEqual(["bob"]);
   });
 
   it("approvals default to zero when not provided", () => {
-    const result = normalizeMr(makeMr(), "org/repo");
+    const result = normalizeMr(makeGitLabMr(), "org/repo");
     expect(result.approvals.approved).toBe(0);
     expect(result.approvals.required).toBe(0);
     expect(result.approvals.approvedByUsernames).toEqual([]);
   });
 
   it("parses depends-on references from description", () => {
-    const mr = makeMr({ description: "Depends on !42\nDepends on org/repo!99" });
+    const mr = makeGitLabMr({
+      description: "Depends on !42\nDepends on org/repo!99",
+    });
     const result = normalizeMr(mr, "org/repo");
     expect(result.dependsOnMrs).toEqual(["!42", "org/repo!99"]);
   });
 
   it("parses linked issues from description", () => {
-    const mr = makeMr({ description: "Closes #5\nCloses #12" });
+    const mr = makeGitLabMr({ description: "Closes #5\nCloses #12" });
     const result = normalizeMr(mr, "org/repo");
     expect(result.linkedIssues).toHaveLength(2);
     expect(result.linkedIssues[0].iid).toBe(5);
@@ -207,20 +168,20 @@ describe("normalizeMr", () => {
   });
 
   it("deduplicates linked issues", () => {
-    const mr = makeMr({ description: "Closes #5\nCloses #5" });
+    const mr = makeGitLabMr({ description: "Closes #5\nCloses #5" });
     const result = normalizeMr(mr, "org/repo");
     expect(result.linkedIssues).toHaveLength(1);
   });
 
   it("needsRebase is true when has_conflicts", () => {
-    const mr = makeMr({ has_conflicts: true });
+    const mr = makeGitLabMr({ has_conflicts: true });
     const result = normalizeMr(mr, "org/repo");
     expect(result.needsRebase).toBe(true);
     expect(result.hasConflicts).toBe(true);
   });
 
   it("needsRebase is true when merge_status is not can_be_merged and opened", () => {
-    const mr = makeMr({
+    const mr = makeGitLabMr({
       merge_status: "cannot_be_merged",
       state: "opened",
     });
@@ -229,14 +190,14 @@ describe("normalizeMr", () => {
   });
 
   it("needsRebase is false when merge_status is can_be_merged", () => {
-    const mr = makeMr({ merge_status: "can_be_merged", state: "opened" });
+    const mr = makeGitLabMr({ merge_status: "can_be_merged", state: "opened" });
     const result = normalizeMr(mr, "org/repo");
     expect(result.needsRebase).toBe(false);
   });
 
   it("handles very large descriptions safely (>100k chars)", () => {
     const huge = "x".repeat(200_000);
-    const mr = makeMr({ description: huge });
+    const mr = makeGitLabMr({ description: huge });
     const result = normalizeMr(mr, "org/repo");
     expect(result.dependsOnMrs).toEqual([]);
   });
@@ -251,7 +212,7 @@ describe("normalizeTodo", () => {
       target_type: "MergeRequest",
       target: { id: 10, iid: 5, title: "Fix bug", state: "opened" },
       body: "You were assigned",
-      author: makeUser(),
+      author: makeGitLabUser(),
       project: {
         id: 1,
         name: "repo",
@@ -280,7 +241,7 @@ describe("normalizeTodo", () => {
       target_type: "MergeRequest",
       target: { id: 10, iid: 5, title: "Old MR", state: "merged" },
       body: "",
-      author: makeUser(),
+      author: makeGitLabUser(),
       project: {
         id: 1,
         name: "repo",
@@ -300,7 +261,7 @@ describe("normalizeTodo", () => {
       target_type: "Issue",
       target: { id: 10, iid: 5, title: "Issue", state: "closed" },
       body: "",
-      author: makeUser(),
+      author: makeGitLabUser(),
       project: {
         id: 1,
         name: "repo",
@@ -320,7 +281,7 @@ describe("normalizeTodo", () => {
       target_type: "MergeRequest",
       target: { id: 10, iid: 5, title: "MR", state: "opened" },
       body: "",
-      author: makeUser(),
+      author: makeGitLabUser(),
       project: null,
       target_url: "",
       created_at: "2026-01-01T00:00:00Z",
@@ -341,7 +302,7 @@ describe("normalizeIssue", () => {
     web_url: "https://gitlab/issues/15",
     labels: ["bug", "P1"],
     assignees: [],
-    author: makeUser(),
+    author: makeGitLabUser(),
     project_id: 42,
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-02T00:00:00Z",
