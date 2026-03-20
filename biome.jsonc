@@ -10,8 +10,10 @@
     "includes": [
       "app/**",
       "server/**",
+      "tests/**",
       "*.{js,mjs,cjs,ts,vue,json,css,html}",
       "nuxt.config.ts",
+      "vitest.config.ts",
       "package.json",
       "biome.jsonc",
       "!!**/.nuxt",

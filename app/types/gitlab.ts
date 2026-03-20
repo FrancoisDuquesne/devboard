@@ -22,7 +22,7 @@ export interface GitLabMergeRequest {
   id: number;
   iid: number;
   title: string;
-  description: string;
+  description: string | null;
   state: "opened" | "closed" | "merged" | "locked";
   draft: boolean;
   web_url: string;
