@@ -12,7 +12,7 @@ import type {
 } from "~/types";
 
 const roleFilter = useLocalStorage<MrRole>("devboard:role-filter", "all");
-const projectFilter = useLocalStorage<string | null>("devboard:project-filter", null);
+const projectFilter = useLocalStorage<string[]>("devboard:project-filter", []);
 const pipelineFilter = useLocalStorage<PipelineStatus | "all">(
   "devboard:pipeline-filter",
   "all",
@@ -50,7 +50,7 @@ const provider = useLocalStorage<ProviderId>("devboard:provider", "gitlab");
 export function usePreferences() {
   function resetAllFilters() {
     roleFilter.value = "all";
-    projectFilter.value = null;
+    projectFilter.value = [];
     pipelineFilter.value = "all";
   }
 

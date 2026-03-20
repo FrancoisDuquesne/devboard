@@ -95,7 +95,7 @@ const mrTypeEnabled = computed(() => nodeTypeFilter.value.includes("mr"));
 const activeFilterCount = computed(() => {
   let count = 0;
   if (roleFilter.value !== "all") count++;
-  if (projectFilter.value !== null) count++;
+  if (projectFilter.value.length > 0) count++;
   if (pipelineFilter.value !== "all") count++;
   return count;
 });

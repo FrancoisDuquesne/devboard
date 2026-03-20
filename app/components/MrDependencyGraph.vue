@@ -87,8 +87,8 @@ const filteredAndSortedMrs = computed(() => {
     });
   }
 
-  if (projectFilter.value) {
-    result = result.filter((mr) => mr.projectPath === projectFilter.value);
+  if (projectFilter.value.length > 0) {
+    result = result.filter((mr) => projectFilter.value.includes(mr.projectPath));
   }
 
   if (pipelineFilter.value !== "all") {
@@ -132,8 +132,8 @@ const filteredMrs = computed(() => (showMrs.value ? mrsWithAliases.value : []));
 const filteredIssues = computed(() => {
   if (!nodeTypeFilter.value.includes("issue")) return [];
   let result = [...(props.issues ?? [])];
-  if (projectFilter.value) {
-    result = result.filter((i) => i.projectPath === projectFilter.value);
+  if (projectFilter.value.length > 0) {
+    result = result.filter((i) => projectFilter.value.includes(i.projectPath ?? ""));
   }
   result.sort((a, b) => {
     let cmp = 0;
@@ -152,8 +152,8 @@ const filteredIssues = computed(() => {
 const filteredTodos = computed(() => {
   if (!nodeTypeFilter.value.includes("todo")) return [];
   let result = [...(props.todos ?? [])];
-  if (projectFilter.value) {
-    result = result.filter((t) => t.projectPath === projectFilter.value);
+  if (projectFilter.value.length > 0) {
+    result = result.filter((t) => projectFilter.value.includes(t.projectPath));
   }
   result.sort((a, b) => {
     let cmp = 0;
@@ -322,7 +322,7 @@ const zoomOnScroll = computed(() => !isInteractiveOverlay.value);
 const isFiltered = computed(
   () =>
     roleFilter.value !== "all" ||
-    projectFilter.value !== null ||
+    projectFilter.value.length > 0 ||
     pipelineFilter.value !== "all" ||
     nodeTypeFilter.value.length < 3,
 );
