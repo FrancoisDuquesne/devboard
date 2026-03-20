@@ -24,6 +24,8 @@ Copy `.env.example` to `.env` and fill in your GitLab/GitHub tokens if you need 
 ```bash
 npm run lint         # check for issues
 npm run lint:fix     # auto-fix issues
+npm run format       # format with Biome
+npm run build        # verify production build passes
 ```
 
 Key rules enforced by the project:

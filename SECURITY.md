@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in DevBoard, please report it responsibly:
+If you discover a security vulnerability in DevBoard, please report it responsibly.
 
 Open a [GitHub Security Advisory](https://github.com/FrancoisDuquesne/devboard/security/advisories/new) (private by default).
 
