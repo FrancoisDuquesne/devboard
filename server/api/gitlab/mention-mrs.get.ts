@@ -18,11 +18,12 @@ export default defineEventHandler(async () => {
     state: "pending",
   });
 
-  // Filter to mention/directly_addressed targeting MergeRequests
+  // Filter to mention/directly_addressed targeting MergeRequests (skip todos without a project)
   const mentionTodos = todos.filter(
     (t) =>
       (t.action_name === "mentioned" || t.action_name === "directly_addressed") &&
-      t.target_type === "MergeRequest",
+      t.target_type === "MergeRequest" &&
+      t.project != null,
   );
 
   // Deduplicate by project_path + iid
