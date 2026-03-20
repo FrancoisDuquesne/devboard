@@ -17,7 +17,13 @@ export default defineEventHandler((event) => {
     return;
   }
 
-  const pathname = getRequestURL(event).pathname;
+  // Strip app baseURL prefix (e.g. "/devboard/") so route matching works during prerendering
+  const rawPath = getRequestURL(event).pathname;
+  const base = useRuntimeConfig().app.baseURL;
+  const pathname =
+    base && base !== "/" && rawPath.startsWith(base)
+      ? `/${rawPath.slice(base.length)}`
+      : rawPath;
 
   // GET /api/worktrees
   if (pathname === "/api/worktrees") {
