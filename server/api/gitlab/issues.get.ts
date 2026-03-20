@@ -13,23 +13,43 @@ async function getProjectPath(projectId: number): Promise<string> {
   return project.path_with_namespace;
 }
 
-export default defineEventHandler(async () => {
-  // Fetch both assigned and created issues (mirrors GitHub provider behavior)
-  const [assigned, created] = await Promise.all([
-    gitlabFetchAllPages<GitLabIssue>("/issues", {
-      scope: "assigned_to_me",
-      state: "opened",
-    }),
-    gitlabFetchAllPages<GitLabIssue>("/issues", {
-      scope: "created_by_me",
-      state: "opened",
-    }),
-  ]);
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event);
+  const scopesParam =
+    typeof query.scopes === "string" ? query.scopes : "assigned,created";
+  const scopes = scopesParam
+    .split(",")
+    .filter((s): s is "assigned" | "created" => ["assigned", "created"].includes(s));
+
+  if (scopes.length === 0) return [];
+
+  const fetches: Promise<GitLabIssue[]>[] = [];
+
+  if (scopes.includes("assigned")) {
+    fetches.push(
+      gitlabFetchAllPages<GitLabIssue>("/issues", {
+        scope: "assigned_to_me",
+        state: "opened",
+      }),
+    );
+  }
+  if (scopes.includes("created")) {
+    fetches.push(
+      gitlabFetchAllPages<GitLabIssue>("/issues", {
+        scope: "created_by_me",
+        state: "opened",
+      }),
+    );
+  }
+
+  const scopeResults = await Promise.all(fetches);
 
   // Deduplicate by issue id
   const issueMap = new Map<number, GitLabIssue>();
-  for (const issue of [...assigned, ...created]) {
-    issueMap.set(issue.id, issue);
+  for (const scopeIssues of scopeResults) {
+    for (const issue of scopeIssues) {
+      issueMap.set(issue.id, issue);
+    }
   }
 
   const enriched = await Promise.all(

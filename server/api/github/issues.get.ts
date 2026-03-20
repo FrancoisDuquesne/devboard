@@ -2,23 +2,43 @@ import type { GitHubIssue } from "~~/app/types";
 import { githubFetchAllPages } from "~~/server/utils/github-client";
 import { normalizeGitHubIssue } from "~~/server/utils/github-normalize";
 
-export default defineEventHandler(async () => {
-  // Fetch both assigned and created issues (like MRs fetch multiple scopes)
-  const [assigned, created] = await Promise.all([
-    githubFetchAllPages<GitHubIssue>("/issues", {
-      filter: "assigned",
-      state: "open",
-    }),
-    githubFetchAllPages<GitHubIssue>("/issues", {
-      filter: "created",
-      state: "open",
-    }),
-  ]);
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event);
+  const scopesParam =
+    typeof query.scopes === "string" ? query.scopes : "assigned,created";
+  const scopes = scopesParam
+    .split(",")
+    .filter((s): s is "assigned" | "created" => ["assigned", "created"].includes(s));
+
+  if (scopes.length === 0) return [];
+
+  const fetches: Promise<GitHubIssue[]>[] = [];
+
+  if (scopes.includes("assigned")) {
+    fetches.push(
+      githubFetchAllPages<GitHubIssue>("/issues", {
+        filter: "assigned",
+        state: "open",
+      }),
+    );
+  }
+  if (scopes.includes("created")) {
+    fetches.push(
+      githubFetchAllPages<GitHubIssue>("/issues", {
+        filter: "created",
+        state: "open",
+      }),
+    );
+  }
+
+  const scopeResults = await Promise.all(fetches);
 
   // Deduplicate by issue id
   const issueMap = new Map<number, GitHubIssue>();
-  for (const issue of [...assigned, ...created]) {
-    issueMap.set(issue.id, issue);
+  for (const scopeIssues of scopeResults) {
+    for (const issue of scopeIssues) {
+      issueMap.set(issue.id, issue);
+    }
   }
 
   // GitHub returns PRs mixed with issues — filter them out

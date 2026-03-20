@@ -9,10 +9,11 @@ let intervalWatcherActive = false;
 let fetchController: AbortController | null = null;
 
 let scopesWatcherActive = false;
+let mrsEnabledWatcherActive = false;
 
 export function useGithub(opts?: { mrPrefix?: string }) {
   const mrPrefix = opts?.mrPrefix ?? "#";
-  const { autoRefreshInterval, mrScopes } = usePreferences();
+  const { autoRefreshInterval, mrScopes, fetchMrsEnabled } = usePreferences();
   const toast = useToast();
 
   // Restart auto-refresh when interval setting changes
@@ -35,10 +36,22 @@ export function useGithub(opts?: { mrPrefix?: string }) {
     watch(mrScopes, () => fetchMrs(), { deep: true });
   }
 
+  // Re-fetch or clear when toggle changes
+  if (!mrsEnabledWatcherActive) {
+    mrsEnabledWatcherActive = true;
+    watch(fetchMrsEnabled, (enabled) => {
+      if (enabled) {
+        fetchMrs();
+      } else {
+        mrs.value = [];
+      }
+    });
+  }
+
   const { status: authStatus, checkConnection } = useGithubAuth();
 
   async function fetchMrs() {
-    if (mrScopes.value.length === 0) {
+    if (!fetchMrsEnabled.value || mrScopes.value.length === 0) {
       mrs.value = [];
       return;
     }

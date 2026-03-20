@@ -2,6 +2,7 @@ import { useLocalStorage } from "@vueuse/core";
 import type {
   GraphGroupBy,
   GraphNodeType,
+  IssueScope,
   MrRole,
   MrScope,
   MrSortDirection,
@@ -37,8 +38,13 @@ const mrScopes = useLocalStorage<MrScope[]>("devboard:mr-scopes", [
   "assigned",
   "reviewer",
 ]);
+const fetchMrsEnabled = useLocalStorage<boolean>("devboard:fetch-mrs", true);
 const fetchTodosEnabled = useLocalStorage<boolean>("devboard:fetch-todos", true);
 const fetchIssuesEnabled = useLocalStorage<boolean>("devboard:fetch-issues", true);
+const issueScopes = useLocalStorage<IssueScope[]>("devboard:issue-scopes", [
+  "assigned",
+  "created",
+]);
 const provider = useLocalStorage<ProviderId>("devboard:provider", "gitlab");
 
 export function usePreferences() {
@@ -71,8 +77,10 @@ export function usePreferences() {
     hideWorktree,
     unhideWorktree,
     mrScopes,
+    fetchMrsEnabled,
     fetchTodosEnabled,
     fetchIssuesEnabled,
+    issueScopes,
     provider,
     resetAllFilters,
   };

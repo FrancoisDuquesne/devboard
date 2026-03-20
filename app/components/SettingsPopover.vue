@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import type { ProviderId } from "~/types";
+import type { IssueScope, MrScope, ProviderId } from "~/types";
 
 const { status, authLoading: connectionLoading, checkConnection, meta } = useProvider();
 const {
   autoRefreshInterval,
   mrScopes,
+  fetchMrsEnabled,
   fetchTodosEnabled,
   fetchIssuesEnabled,
+  issueScopes,
   provider,
 } = usePreferences();
 const { enabled: worktreesEnabled, configured, scanDirs } = useWorktrees();
 
-function toggleScope(scope: "authored" | "assigned" | "reviewer") {
+function toggleMrScope(scope: MrScope) {
   const idx = mrScopes.value.indexOf(scope);
   if (idx >= 0) {
     if (mrScopes.value.length > 1) {
@@ -19,6 +21,17 @@ function toggleScope(scope: "authored" | "assigned" | "reviewer") {
     }
   } else {
     mrScopes.value.push(scope);
+  }
+}
+
+function toggleIssueScope(scope: IssueScope) {
+  const idx = issueScopes.value.indexOf(scope);
+  if (idx >= 0) {
+    if (issueScopes.value.length > 1) {
+      issueScopes.value.splice(idx, 1);
+    }
+  } else {
+    issueScopes.value.push(scope);
   }
 }
 
@@ -138,13 +151,20 @@ function toggleColorMode() {
           </div>
 
           <template v-if="status?.connected">
-            <!-- Data sources -->
+            <!-- MRs / PRs -->
             <div class="space-y-1.5">
-              <div class="flex items-center gap-2 px-2">
-                <UIcon name="i-lucide-git-pull-request" class="size-4 text-dimmed" />
-                <span class="text-sm capitalize">{{ meta.mrLabelPlural }}</span>
+              <div class="flex items-center justify-between px-2">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-git-pull-request" class="size-4 text-dimmed" />
+                  <span class="text-sm capitalize">{{ meta.mrLabelPlural }}</span>
+                </div>
+                <USwitch
+                  v-model="fetchMrsEnabled"
+                  size="sm"
+                  :aria-label="`Fetch ${meta.mrLabelPlural}`"
+                />
               </div>
-              <div class="flex flex-wrap gap-1 pl-8">
+              <div v-if="fetchMrsEnabled" class="flex flex-wrap gap-1 pl-8">
                 <UButton
                   v-for="scope in (['authored', 'assigned', 'reviewer'] as const)"
                   :key="scope"
@@ -152,31 +172,48 @@ function toggleColorMode() {
                   :color="mrScopes.includes(scope) ? 'primary' : 'neutral'"
                   size="xs"
                   :aria-label="`Fetch ${scope} ${meta.mrLabelPlural}`"
-                  @click="toggleScope(scope)"
+                  @click="toggleMrScope(scope)"
                 >
                   {{ scope.charAt(0).toUpperCase() + scope.slice(1) }}
                 </UButton>
               </div>
             </div>
 
+            <!-- Issues -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between px-2">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-circle-dot" class="size-4 text-dimmed" />
+                  <span class="text-sm">Issues</span>
+                </div>
+                <USwitch
+                  v-model="fetchIssuesEnabled"
+                  size="sm"
+                  aria-label="Fetch issues"
+                />
+              </div>
+              <div v-if="fetchIssuesEnabled" class="flex flex-wrap gap-1 pl-8">
+                <UButton
+                  v-for="scope in (['assigned', 'created'] as const)"
+                  :key="scope"
+                  :variant="issueScopes.includes(scope) ? 'soft' : 'outline'"
+                  :color="issueScopes.includes(scope) ? 'primary' : 'neutral'"
+                  size="xs"
+                  :aria-label="`Fetch ${scope} issues`"
+                  @click="toggleIssueScope(scope)"
+                >
+                  {{ scope.charAt(0).toUpperCase() + scope.slice(1) }}
+                </UButton>
+              </div>
+            </div>
+
+            <!-- Todos -->
             <div class="flex items-center justify-between px-2">
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-list-todo" class="size-4 text-dimmed" />
                 <span class="text-sm">Todos</span>
               </div>
               <USwitch v-model="fetchTodosEnabled" size="sm" aria-label="Fetch todos" />
-            </div>
-
-            <div class="flex items-center justify-between px-2">
-              <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-circle-dot" class="size-4 text-dimmed" />
-                <span class="text-sm">Issues</span>
-              </div>
-              <USwitch
-                v-model="fetchIssuesEnabled"
-                size="sm"
-                aria-label="Fetch issues"
-              />
             </div>
 
             <!-- Auto-refresh -->

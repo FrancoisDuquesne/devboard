@@ -73,6 +73,7 @@ export type ActionRequired =
   | "waiting";
 
 export type MrScope = "authored" | "assigned" | "reviewer";
+export type IssueScope = "assigned" | "created";
 export type MrRole = "author" | "reviewer" | "mentioned" | "all";
 export type GraphNodeType = "mr" | "issue" | "todo";
 export type GraphGroupBy = "none" | "project";

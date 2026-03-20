@@ -9,9 +9,10 @@ let intervalWatcherActive = false;
 let fetchController: AbortController | null = null;
 
 let issuesEnabledWatcherActive = false;
+let scopesWatcherActive = false;
 
 export function useIssues() {
-  const { autoRefreshInterval, fetchIssuesEnabled } = usePreferences();
+  const { autoRefreshInterval, fetchIssuesEnabled, issueScopes } = usePreferences();
 
   if (!intervalWatcherActive) {
     intervalWatcherActive = true;
@@ -38,8 +39,14 @@ export function useIssues() {
     });
   }
 
+  // Re-fetch when issue scopes change
+  if (!scopesWatcherActive) {
+    scopesWatcherActive = true;
+    watch(issueScopes, () => fetchIssues(), { deep: true });
+  }
+
   async function fetchIssues() {
-    if (!fetchIssuesEnabled.value) {
+    if (!fetchIssuesEnabled.value || issueScopes.value.length === 0) {
       issues.value = [];
       return;
     }
@@ -50,7 +57,10 @@ export function useIssues() {
     loading.value = true;
     error.value = null;
     try {
-      issues.value = await $fetch<DevBoardIssue[]>("/api/gitlab/issues", { signal });
+      issues.value = await $fetch<DevBoardIssue[]>("/api/gitlab/issues", {
+        signal,
+        params: { scopes: issueScopes.value.join(",") },
+      });
     } catch (e) {
       if (signal.aborted) return;
       error.value = e instanceof Error ? e.message : "Failed to fetch issues";
