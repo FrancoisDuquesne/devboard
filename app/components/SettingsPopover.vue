@@ -22,7 +22,13 @@ function toggleScope(scope: "authored" | "assigned" | "reviewer") {
   }
 }
 
-function switchProvider(id: ProviderId) {
+const providerTabs = [
+  { label: "GitLab", value: "gitlab", icon: "i-simple-icons-gitlab" },
+  { label: "GitHub", value: "github", icon: "i-simple-icons-github" },
+];
+
+function onProviderChange(value: string) {
+  const id = value as ProviderId;
   if (id === provider.value) return;
   provider.value = id;
   window.location.reload();
@@ -64,24 +70,13 @@ function toggleColorMode() {
         <!-- Provider selector -->
         <div class="space-y-3">
           <p class="text-xs font-medium text-dimmed">Provider</p>
-          <UButtonGroup size="xs" class="w-full">
-            <UButton
-              icon="i-simple-icons-gitlab"
-              label="GitLab"
-              :variant="provider === 'gitlab' ? 'soft' : 'outline'"
-              :color="provider === 'gitlab' ? 'primary' : 'neutral'"
-              class="flex-1"
-              @click="switchProvider('gitlab')"
-            />
-            <UButton
-              icon="i-simple-icons-github"
-              label="GitHub"
-              :variant="provider === 'github' ? 'soft' : 'outline'"
-              :color="provider === 'github' ? 'primary' : 'neutral'"
-              class="flex-1"
-              @click="switchProvider('github')"
-            />
-          </UButtonGroup>
+          <UTabs
+            :model-value="provider"
+            :items="providerTabs"
+            :content="false"
+            :ui="{ list: 'w-full', trigger: 'flex-1 justify-center' }"
+            @update:model-value="onProviderChange"
+          />
         </div>
 
         <USeparator />
@@ -126,7 +121,7 @@ function toggleColorMode() {
               <code class="rounded bg-muted px-1 py-0.5">.env</code>:
             </p>
             <pre
-              class="rounded-md bg-elevated px-2 py-1 text-xs leading-relaxed"
+              class="overflow-x-auto rounded-md bg-elevated px-2 py-1 text-xs leading-relaxed"
             ><code>{{ meta.authEnvVars.host }}={{ meta.authHostExample }}
 {{ meta.authEnvVars.token }}={{ meta.authTokenExample }}</code></pre>
             <p class="text-xs text-dimmed">Then restart the dev server.</p>
@@ -156,7 +151,7 @@ function toggleColorMode() {
                   :variant="mrScopes.includes(scope) ? 'soft' : 'outline'"
                   :color="mrScopes.includes(scope) ? 'primary' : 'neutral'"
                   size="xs"
-                  :aria-label="`Fetch ${scope} MRs`"
+                  :aria-label="`Fetch ${scope} ${meta.mrLabelPlural}`"
                   @click="toggleScope(scope)"
                 >
                   {{ scope.charAt(0).toUpperCase() + scope.slice(1) }}
@@ -245,7 +240,7 @@ function toggleColorMode() {
         <!-- Quick actions -->
         <div class="space-y-0.5">
           <button
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             @click="toggleColorMode"
           >
             <UIcon
@@ -256,7 +251,7 @@ function toggleColorMode() {
             <span class="ml-auto text-xs text-dimmed">Toggle</span>
           </button>
           <button
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             @click="helpOpen = true"
           >
             <UIcon name="i-lucide-keyboard" class="size-4 text-dimmed" />
@@ -264,7 +259,7 @@ function toggleColorMode() {
             <UKbd value="?" size="sm" class="ml-auto" />
           </button>
           <button
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             @click="resetWelcome"
           >
             <UIcon name="i-lucide-circle-help" class="size-4 text-dimmed" />
