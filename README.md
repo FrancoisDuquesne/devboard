@@ -104,6 +104,20 @@ npm run build     # Production build
 npm run start     # Start production server
 ```
 
+### Docker
+
+```bash
+cp .env.example .env
+# edit .env with your tokens
+docker compose up
+```
+
+For demo mode (no tokens needed):
+
+```bash
+docker compose run -e DEMO_MODE=true devboard
+```
+
 ---
 
 ## Demo mode
