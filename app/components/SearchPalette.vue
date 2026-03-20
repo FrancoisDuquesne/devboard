@@ -3,9 +3,7 @@ import type { MrStatus } from "~/types";
 import { todoActionConfig } from "~/utils/todoAction";
 
 const { searchOpen, selectedMr } = useSearch();
-const { mrs: regularMrs } = useGitlab();
-const { todos, mentionMrs } = useTodos();
-const { issues } = useIssues();
+const { mrs: regularMrs, todos, mentionMrs, issues, meta } = useProvider();
 
 const allMrs = computed(() => {
   const regularIds = new Set(regularMrs.value.map((mr) => mr.id));
@@ -32,7 +30,7 @@ const groups = computed(() => [
     label: "Merge Requests",
     items: allMrs.value.map((mr) => ({
       id: `mr-${mr.projectId}-${mr.iid}`,
-      label: `!${mr.iid} ${mr.title}`,
+      label: `${meta.mrPrefix}${mr.iid} ${mr.title}`,
       suffix: mr.sourceBranch,
       description: `${mr.projectPath} · ${mr.author.name}`,
       icon: statusIcon(mr.status),
@@ -65,7 +63,7 @@ const groups = computed(() => [
       const config = todoActionConfig[todo.action];
       return {
         id: `todo-${todo.id}`,
-        label: `${config.label} !${todo.target.iid} ${todo.target.title}`,
+        label: `${config.label} ${meta.mrPrefix}${todo.target.iid} ${todo.target.title}`,
         description: `${todo.projectPath} · ${todo.author.name}`,
         icon: config.icon,
         onSelect() {

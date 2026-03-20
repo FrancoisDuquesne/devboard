@@ -10,8 +10,7 @@ const props = defineProps<{
 
 const open = defineModel<boolean>("open", { default: false });
 
-const { fetchMrDetail } = useGitlab();
-const { status: authStatus } = useGitlabAuth();
+const { fetchMrDetail, status: authStatus, meta } = useProvider();
 const { enabled: worktreeEnabled, worktreeByBranch } = useWorktrees();
 const now = useNow();
 const { copy } = useClipboard();
@@ -73,7 +72,7 @@ watch(
   },
 );
 
-function openInGitLab() {
+function openInProvider() {
   safeOpen(detail.value?.webUrl);
 }
 </script>
@@ -83,7 +82,7 @@ function openInGitLab() {
     v-model:open="open"
     side="right"
     :overlay="false"
-    :title="mr ? `!${mr.iid} ${mr.title}` : ''"
+    :title="mr ? `${meta.mrPrefix}${mr.iid} ${mr.title}` : ''"
   >
     <template #body>
       <div v-if="loadingDetail" class="flex flex-col gap-4 p-4">
@@ -107,14 +106,15 @@ function openInGitLab() {
                 size="xs"
                 class="shrink-0"
                 aria-label="Copy MR reference"
-                @click="copyToClipboard(`${detail.projectPath}!${detail.iid}`, 'ref')"
+                @click="copyToClipboard(`${detail.projectPath}${meta.mrPrefix}${detail.iid}`, 'ref')"
               />
             </div>
             <h2
               class="truncate text-lg font-semibold"
-              :title="`!${detail.iid} ${detail.title}`"
+              :title="`${meta.mrPrefix}${detail.iid} ${detail.title}`"
             >
-              !{{ detail.iid }} {{ detail.title }}
+              {{ meta.mrPrefix + detail.iid }}
+              {{ detail.title }}
             </h2>
           </div>
           <StatusBadge :status="detail.status" />
@@ -309,12 +309,12 @@ function openInGitLab() {
         </div>
 
         <UButton
-          label="Open in GitLab"
+          :label="`Open in ${meta.name}`"
           icon="i-lucide-external-link"
           variant="soft"
           color="primary"
           block
-          @click="openInGitLab"
+          @click="openInProvider"
         />
       </div>
     </template>

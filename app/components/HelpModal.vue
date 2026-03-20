@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { helpOpen } = useHelp();
+const { meta } = useProvider();
 
 const shortcutGroups = [
   {
@@ -17,7 +18,7 @@ const shortcutGroups = [
     icon: "i-lucide-zap",
     shortcuts: [
       { keys: ["R"], description: "Refresh all data" },
-      { keys: ["Cmd", "Click"], description: "Open MR in GitLab" },
+      { keys: ["Cmd", "Click"], description: `Open MR in ${meta.name}` },
     ],
   },
   {

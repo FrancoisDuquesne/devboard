@@ -462,6 +462,9 @@ export function useMrGraph(
   todos?: Readonly<Ref<DevBoardTodo[]>>,
   groupBy?: Readonly<Ref<GraphGroupBy>>,
 ) {
+  const {
+    meta: { mrPrefix },
+  } = useProvider();
   const colorMode = useColorMode();
 
   const edgeColors = computed<EdgeColors>(() => {
@@ -590,7 +593,7 @@ export function useMrGraph(
     for (const mr of mrs.value) {
       const nodeId = String(mr.id);
       mrById.set(mr.id, nodeId);
-      mrByRef.set(`${mr.projectPath}!${mr.iid}`, nodeId);
+      mrByRef.set(`${mr.projectPath}${mrPrefix}${mr.iid}`, nodeId);
     }
 
     const issueById = new Map<number, string>();

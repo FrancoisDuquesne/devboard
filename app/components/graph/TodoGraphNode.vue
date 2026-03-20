@@ -10,13 +10,11 @@ const props = defineProps<{
 }>();
 
 const now = useNow();
-const { markAsDone } = useTodos();
-
-const { status } = useGitlabAuth();
+const { markAsDone, status, meta } = useProvider();
 
 const todoUrl = computed(() => {
   if (!status.value?.host) return null;
-  return `https://${status.value.host}/dashboard/todos`;
+  return meta.dashboardTodosPath(status.value.host);
 });
 
 const isIssue = computed(() => props.data.targetType === "Issue");
@@ -98,7 +96,7 @@ function openTodoPage(event: MouseEvent) {
           name="i-lucide-git-pull-request"
           class="size-3.5 shrink-0 text-primary"
         />
-        <span class="text-dimmed">!{{ data.target.iid }}</span>
+        <span class="text-dimmed">{{ meta.mrPrefix + data.target.iid }}</span>
         <span class="truncate">{{ data.target.title }}</span>
       </a>
       <p v-else class="truncate text-sm font-medium leading-snug">

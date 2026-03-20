@@ -8,11 +8,9 @@ export interface NotificationAction {
 const actionItems = ref<NotificationAction[]>([]);
 
 export function useNotifications() {
-  const { mrs } = useGitlab();
-  const { status } = useGitlabAuth();
-  const { todos, pendingCount: todoCount } = useTodos();
+  const { mrs, status, todos, pendingCount: todoCount } = useProvider();
 
-  // Map GitLab todo actions to their MR action equivalents
+  // Map todo actions to their MR action equivalents
   const todoActionToMrAction: Record<string, ActionRequired[]> = {
     review_requested: ["review"],
     approval_required: ["review"],
@@ -34,7 +32,7 @@ export function useNotifications() {
       }))
       .filter(({ action }) => action !== "waiting")
       .filter(({ mr, action }) => {
-        // Skip if a GitLab todo already covers this action for this MR
+        // Skip if a todo already covers this action for this MR
         return !todos.value.some((todo) => {
           if (todo.targetType !== "MergeRequest") return false;
           if (todo.target.iid !== mr.iid || todo.projectPath !== mr.projectPath)

@@ -6,6 +6,8 @@ const props = defineProps<{
   webUrl: string | null;
 }>();
 
+const { meta } = useProvider();
+
 const config = computed(() => {
   switch (props.status) {
     case "success":
@@ -46,7 +48,7 @@ function openPipeline() {
     size="sm"
     :icon="config.icon"
     :label="config.label"
-    :title="webUrl ? 'Open pipeline in GitLab' : undefined"
+    :title="webUrl ? `Open pipeline in ${meta.name}` : undefined"
     :class="{ 'cursor-pointer hover:opacity-80': webUrl }"
     @click.stop="openPipeline"
   />

@@ -1,24 +1,27 @@
 <script setup lang="ts">
 import type { DevBoardIssue, DevBoardMR } from "~/types";
 
-const { mrs, loading, error, projects, fetchMrs, startAutoRefresh, stopAutoRefresh } =
-  useGitlab();
 const {
+  mrs,
+  mrsLoading: loading,
+  mrsError: error,
+  projects,
+  fetchMrs,
+  startMrsAutoRefresh: startAutoRefresh,
+  stopMrsAutoRefresh: stopAutoRefresh,
   todos,
   mentionMrs,
   pendingCount: todoPendingCount,
-  panelOpen: todoPanelOpen,
+  todoPanelOpen,
   fetchTodos,
   fetchMentionMrs,
-  startAutoRefresh: startTodosRefresh,
-  stopAutoRefresh: stopTodosRefresh,
-} = useTodos();
-const {
+  startTodosAutoRefresh: startTodosRefresh,
+  stopTodosAutoRefresh: stopTodosRefresh,
   issues,
   fetchIssues,
-  startAutoRefresh: startIssuesRefresh,
-  stopAutoRefresh: stopIssuesRefresh,
-} = useIssues();
+  startIssuesAutoRefresh: startIssuesRefresh,
+  stopIssuesAutoRefresh: stopIssuesRefresh,
+} = useProvider();
 const {
   enabled: worktreesEnabled,
   panelOpen: worktreePanelOpen,

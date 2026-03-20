@@ -9,7 +9,7 @@ const props = defineProps<{
   data: DevBoardMR & { projectAlias?: string; isMention?: boolean };
 }>();
 
-const { status } = useGitlabAuth();
+const { status, meta } = useProvider();
 const { enabled: worktreeEnabled, worktreeByBranch } = useWorktrees();
 const now = useNow();
 const { copy } = useClipboard();
@@ -74,7 +74,7 @@ function handleClick(event: MouseEvent) {
               name="i-lucide-git-pull-request"
               class="size-3.5 shrink-0 text-primary"
             />
-            <span class="text-dimmed">!{{ data.iid }}</span>
+            <span class="text-dimmed">{{ meta.mrPrefix + data.iid }}</span>
             <span class="truncate">{{ data.title }}</span>
           </a>
         </UTooltip>

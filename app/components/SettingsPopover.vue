@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { status, loading: connectionLoading, checkConnection } = useGitlabAuth();
+const { status, authLoading: connectionLoading, checkConnection, meta } = useProvider();
 const { autoRefreshInterval, mrScopes, fetchTodosEnabled, fetchIssuesEnabled } =
   usePreferences();
 const { enabled: worktreesEnabled, configured, scanDirs } = useWorktrees();
@@ -48,9 +48,9 @@ function toggleColorMode() {
 
     <template #content>
       <div class="w-64 space-y-4 p-4 sm:w-72">
-        <!-- GitLab -->
+        <!-- Provider -->
         <div class="space-y-3">
-          <p class="text-xs font-medium text-dimmed">GitLab</p>
+          <p class="text-xs font-medium text-dimmed">{{ meta.name }}</p>
           <div class="flex items-center gap-1.5 rounded-md bg-muted p-1.5 text-sm">
             <UIcon
               v-if="connectionStatus === 'connected'"
@@ -81,14 +81,16 @@ function toggleColorMode() {
           <div v-if="status && !status.connected" class="space-y-1.5">
             <p class="text-xs text-dimmed">
               Run
-              <code class="rounded bg-muted px-1 py-0.5">glab auth login</code>
+              <code class="rounded bg-muted px-1 py-0.5">
+                {{ meta.authCliCommand }}
+              </code>
               or add to
               <code class="rounded bg-muted px-1 py-0.5">.env</code>:
             </p>
             <pre
               class="rounded-md bg-elevated px-2 py-1 text-xs leading-relaxed"
-            ><code>GITLAB_HOST=gitlab.example.com
-GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
+            ><code>{{ meta.authEnvVars.host }}=gitlab.example.com
+{{ meta.authEnvVars.token }}=glpat-xxxx</code></pre>
             <p class="text-xs text-dimmed">Then restart the dev server.</p>
             <UButton
               icon="i-lucide-refresh-cw"

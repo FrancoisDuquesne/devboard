@@ -10,7 +10,8 @@ let fetchController: AbortController | null = null;
 
 let scopesWatcherActive = false;
 
-export function useGitlab() {
+export function useGitlab(opts?: { mrPrefix?: string }) {
+  const mrPrefix = opts?.mrPrefix ?? "!";
   const { autoRefreshInterval, mrScopes } = usePreferences();
   const toast = useToast();
 
@@ -82,7 +83,7 @@ export function useGitlab() {
     for (const mr of fresh) {
       if (!prevMap.has(mr.id)) {
         toast.add({
-          title: `New MR: !${mr.iid} ${mr.title}`,
+          title: `New MR: ${mrPrefix}${mr.iid} ${mr.title}`,
           icon: "i-lucide-git-pull-request",
           color: "info",
         });
@@ -93,7 +94,7 @@ export function useGitlab() {
     for (const mr of previous) {
       if (!freshMap.has(mr.id)) {
         toast.add({
-          title: `MR removed: !${mr.iid} ${mr.title}`,
+          title: `MR removed: ${mrPrefix}${mr.iid} ${mr.title}`,
           icon: "i-lucide-git-merge",
           color: "success",
         });
@@ -107,7 +108,7 @@ export function useGitlab() {
       if (prev.pipeline.status !== mr.pipeline.status) {
         if (mr.pipeline.status === "failed") {
           toast.add({
-            title: `Pipeline failed: !${mr.iid}`,
+            title: `Pipeline failed: ${mrPrefix}${mr.iid}`,
             icon: "i-lucide-x-circle",
             color: "error",
           });
@@ -116,7 +117,7 @@ export function useGitlab() {
           prev.pipeline.status === "failed"
         ) {
           toast.add({
-            title: `Pipeline recovered: !${mr.iid}`,
+            title: `Pipeline recovered: ${mrPrefix}${mr.iid}`,
             icon: "i-lucide-check-circle",
             color: "success",
           });

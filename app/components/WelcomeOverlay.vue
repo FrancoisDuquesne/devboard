@@ -1,13 +1,13 @@
 <script setup lang="ts">
 const { welcomeOpen, dismissWelcome } = useOnboarding();
 const { helpOpen } = useHelp();
+const { meta } = useProvider();
 
 const features = [
   {
     icon: "i-lucide-plug",
-    title: "Connect to GitLab",
-    description:
-      'Run "glab auth login" to connect instantly, or set GITLAB_HOST and GITLAB_PRIVATE_TOKEN in a .env file. The token needs api scope.',
+    title: `Connect to ${meta.name}`,
+    description: `Run "${meta.authCliCommand}" to connect instantly, or set ${meta.authEnvVars.host} and ${meta.authEnvVars.token} in a .env file. The token needs ${meta.authTokenScope} scope.`,
   },
   {
     icon: "i-lucide-workflow",
@@ -68,7 +68,8 @@ function viewShortcuts() {
             </div>
             <h2 class="text-lg font-semibold">Welcome to DevBoard</h2>
             <p class="text-sm text-dimmed">
-              Your real-time GitLab merge request dashboard. Here's how to get started.
+              Your real-time {{ meta.name }} {{ meta.mrLabel }} dashboard. Here's how to
+              get started.
             </p>
           </div>
         </template>
