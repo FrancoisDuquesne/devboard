@@ -4,7 +4,9 @@
 
 [![CI](https://github.com/FrancoisDuquesne/devboard/actions/workflows/ci.yml/badge.svg)](https://github.com/FrancoisDuquesne/devboard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
+
+**[Live Demo](https://francoisduquesne.github.io/devboard/)** — try it now, no setup needed
 
 </div>
 
@@ -18,37 +20,49 @@ DevBoard connects to your GitLab or GitHub instance and renders merge requests, 
 
 Merge requests, issues, and todos rendered as draggable nodes with color-coded edges showing dependencies, linked issues, and todo targets. Green = healthy, red (animated) = blocked, amber (animated) = in-progress.
 
-<img src="docs/screenshots/graph-dark.png" alt="Graph view — dark mode" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/graph-dark.png" alt="Graph view — dark mode" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ### Detail drawer
 
 Click any MR node to open a slide-over with branches, reviewers, labels, closing issues, related MRs, and dependencies.
 
-<img src="docs/screenshots/drawer-open.png" alt="MR detail drawer" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/drawer-open.png" alt="MR detail drawer" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ### Command palette
 
 Fuzzy search across all MRs, issues, and todos with `Ctrl+K` / `Cmd+K`.
 
-<img src="docs/screenshots/search-open.png" alt="Search palette" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/search-open.png" alt="Search palette" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ### Smart inbox
 
 Todo and notification panel with tabs for all todos, mentions, and required actions. Mark items done individually or in bulk.
 
-<img src="docs/screenshots/todo-panel.png" alt="Todo panel" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/todo-panel.png" alt="Todo panel" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ### Worktree tracking
 
 See your local git worktrees alongside MRs. DevBoard scans configured directories, links worktrees to MRs by branch name, and shows a "Local" badge on graph nodes that have a local checkout. Copy paths, jump to linked MRs or issues, and hide worktrees you don't need.
 
-<img src="docs/screenshots/worktree-panel.png" alt="Worktree panel" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/worktree-panel.png" alt="Worktree panel" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ### Annotations & drawing tools
 
 Add sticky notes and freehand drawings directly on the board. Notes support markdown rendering, resizing, and color-coded backgrounds. Drawing tools include freehand, arrows, and rectangles with color and stroke width options. An eraser tool lets you click any drawing to delete it. Everything persists locally.
 
-<img src="docs/screenshots/annotations.png" alt="Annotation toolbar with sticky note" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/annotations.png" alt="Annotation toolbar with sticky note" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ### And more
 
@@ -120,9 +134,13 @@ docker compose run -e DEMO_MODE=true devboard
 
 ---
 
-## Demo mode
+## Demo
 
-Try DevBoard without any provider connection — realistic mock data included:
+Try DevBoard without any setup — the live demo runs with realistic mock data:
+
+**[https://francoisduquesne.github.io/devboard/](https://francoisduquesne.github.io/devboard/)**
+
+Or run it locally:
 
 ```bash
 npm run demo
@@ -149,7 +167,9 @@ This starts the dev server with pre-built fixtures: 11 MRs across 3 projects wit
 | `a` | Arrow tool |
 | `e` | Eraser tool |
 
-<img src="docs/screenshots/help.png" alt="Keyboard shortcuts modal" width="100%" />
+<p align="center">
+  <img src="docs/screenshots/help.png" alt="Keyboard shortcuts modal" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
+</p>
 
 ---
 
@@ -176,6 +196,8 @@ DevBoard is a Nuxt 4 SPA (SSR disabled). The frontend renders the dashboard; a N
 ```
 app/                          # Frontend (Vue 3 + Composition API)
 ├── pages/index.vue           # Full-screen graph dashboard
+├── plugins/                  # Nuxt plugins
+│   └── demo-fetch.client.ts  # Client-side fetch interceptor for static demo builds
 ├── providers/                # Provider metadata (GitLab, GitHub)
 ├── components/
 │   ├── graph/                # Graph node + annotation components
@@ -195,12 +217,14 @@ app/                          # Frontend (Vue 3 + Composition API)
 │   └── useAnnotations.ts     # Sticky notes + drawings state (localStorage)
 └── types/                    # TypeScript definitions
 
+shared/                       # Code shared between app and server
+└── fixtures/                 # Mock data for demo mode
+
 server/                       # Nitro API proxy
 ├── api/gitlab/               # 8 API routes (mrs, issues, todos, mention-mrs, status)
 ├── api/github/               # 8 API routes (same pattern as GitLab)
 ├── api/worktrees/            # Worktree scanning endpoint
-├── middleware/demo.ts        # Demo mode interceptor
-├── fixtures/                 # Mock data for demo mode
+├── middleware/demo.ts        # Demo mode interceptor (dev server)
 └── utils/                    # Provider clients, auth, normalization, cache, worktree scanner
 
 tests/                        # Test suite
