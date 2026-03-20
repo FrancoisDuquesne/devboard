@@ -5,12 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] — 2026-03-20
 
 ### Added
 
 - **GitHub Pages demo site** — static build deployed automatically on push to master via GitHub Actions (`gh-pages.yml`)
 - **Demo banner** — sticky "Demo Mode" indicator shown when running with fixture data
+- **Docker setup** — `Dockerfile` and `docker-compose.yml` for easy local installation
+- **Release automation** — tag-triggered workflow that creates GitHub Releases with auto-generated notes
+- **CONTRIBUTING.md** — contributor guide with setup, commit conventions, and releasing instructions
+- **SECURITY.md** — security policy with vulnerability reporting via GitHub Advisories
+
+### Changed
+
+- CI opts into Node.js 24 for GitHub Actions runners
 
 ## [1.0.0] — 2026-03-20
 
