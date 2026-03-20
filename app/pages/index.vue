@@ -80,7 +80,9 @@ const standaloneIssues = computed(() => issues.value);
 const allProjects = computed(() => {
   const paths = new Set<string>();
   for (const mr of allMrs.value) paths.add(mr.projectPath);
-  for (const issue of standaloneIssues.value) paths.add(issue.projectPath);
+  for (const issue of standaloneIssues.value) {
+    if (issue.projectPath) paths.add(issue.projectPath);
+  }
   for (const todo of todos.value) paths.add(todo.projectPath);
   return [...paths].sort();
 });
@@ -206,7 +208,7 @@ watch(pageTitle, (title) => useHead({ title }), { immediate: true });
       :mention-mr-ids="mentionMrIds"
       :issues="standaloneIssues"
       :todos="todos"
-      :focused-node-id="drawerOpen && selectedMr ? String(selectedMr.id) : issueDrawerOpen && selectedIssue ? String(selectedIssue.id) : null"
+      :focused-node-id="drawerOpen && selectedMr ? String(selectedMr.id) : issueDrawerOpen && selectedIssue ? `issue-${selectedIssue.id}` : null"
       @select="onSelectMr"
       @select-issue="onSelectIssue"
     />

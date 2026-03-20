@@ -14,6 +14,7 @@ const {
   sortField,
   sortDirection,
   mrScopes,
+  fetchMrsEnabled,
   fetchTodosEnabled,
   fetchIssuesEnabled,
   resetAllFilters,
@@ -21,7 +22,7 @@ const {
 
 const availableNodeTypes = computed(() =>
   nodeTypeItems.filter((item) => {
-    if (item.value === "mr") return mrScopes.value.length > 0;
+    if (item.value === "mr") return fetchMrsEnabled.value && mrScopes.value.length > 0;
     if (item.value === "todo") return fetchTodosEnabled.value;
     if (item.value === "issue") return fetchIssuesEnabled.value;
     return true;
@@ -30,7 +31,7 @@ const availableNodeTypes = computed(() =>
 
 // Clean up nodeTypeFilter when a data source is turned off
 watch(
-  [mrScopes, fetchTodosEnabled, fetchIssuesEnabled],
+  [mrScopes, fetchMrsEnabled, fetchTodosEnabled, fetchIssuesEnabled],
   () => {
     const available = new Set(availableNodeTypes.value.map((i) => i.value));
     const cleaned = nodeTypeFilter.value.filter((t) => available.has(t));

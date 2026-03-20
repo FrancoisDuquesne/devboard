@@ -646,7 +646,7 @@ export function useMrGraph(
         if (todo.targetType === "MergeRequest") {
           targetNodeId =
             mrById.get(todo.target.id) ??
-            mrByRef.get(`${todo.projectPath}!${ref}`) ??
+            mrByRef.get(`${todo.projectPath}${mrPrefix}${ref}`) ??
             null;
         } else if (todo.targetType === "Issue") {
           targetNodeId =

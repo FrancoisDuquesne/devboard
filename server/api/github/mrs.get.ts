@@ -27,21 +27,21 @@ export default defineEventHandler(async (event) => {
   if (scopes.includes("authored")) {
     searches.push(
       githubFetch<GitHubSearchResult<GitHubPullRequest[]>>("/search/issues", {
-        params: { q: "type:pr state:open author:@me" },
+        params: { q: "type:pr state:open author:@me", per_page: 100 },
       }).then((r) => r.items),
     );
   }
   if (scopes.includes("assigned")) {
     searches.push(
       githubFetch<GitHubSearchResult<GitHubPullRequest[]>>("/search/issues", {
-        params: { q: "type:pr state:open assignee:@me" },
+        params: { q: "type:pr state:open assignee:@me", per_page: 100 },
       }).then((r) => r.items),
     );
   }
   if (scopes.includes("reviewer")) {
     searches.push(
       githubFetch<GitHubSearchResult<GitHubPullRequest[]>>("/search/issues", {
-        params: { q: "type:pr state:open review-requested:@me" },
+        params: { q: "type:pr state:open review-requested:@me", per_page: 100 },
       }).then((r) => r.items),
     );
   }
