@@ -56,6 +56,13 @@ Please add or update tests when introducing new features or fixing bugs. Tests l
 
 DevBoard supports both GitLab and GitHub through a shared abstraction layer. When you add or change a feature on one provider, you **must** mirror the change on the other. See [`PROVIDER_PARITY.md`](PROVIDER_PARITY.md) for the full contract and checklist.
 
+## Releasing
+
+1. Update `CHANGELOG.md` with the new version's changes.
+2. Run `npm version <major|minor|patch>` (bumps package.json and creates a git tag).
+3. Push with tags: `git push origin master --tags`.
+4. The release workflow will create a GitHub Release automatically.
+
 ## Questions?
 
 Open an issue on GitHub -- there are no dumb questions.
