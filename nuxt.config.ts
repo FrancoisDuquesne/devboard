@@ -1,7 +1,4 @@
 import tailwindcss from "@tailwindcss/vite";
-import { demoIssues } from "./server/fixtures/issues";
-import { demoMentionMrs } from "./server/fixtures/mention-mrs";
-import { demoMrs } from "./server/fixtures/mrs";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
 const baseURL = isGitHubPages ? "/devboard/" : "/";
@@ -63,34 +60,5 @@ export default defineNuxtConfig({
         "Cache-Control": "no-store",
       },
     },
-  },
-  nitro: {
-    ...(isGitHubPages && {
-      prerender: {
-        routes: [
-          "/api/gitlab/status",
-          "/api/github/status",
-          "/api/gitlab/mrs",
-          "/api/github/mrs",
-          "/api/gitlab/issues",
-          "/api/github/issues",
-          "/api/gitlab/todos",
-          "/api/github/todos",
-          "/api/gitlab/mention-mrs",
-          "/api/github/mention-mrs",
-          "/api/worktrees",
-          // MR detail routes — derived from fixtures
-          ...[...demoMrs, ...demoMentionMrs].flatMap((mr) => [
-            `/api/gitlab/mrs/${mr.projectId}/${mr.iid}`,
-            `/api/github/mrs/${mr.projectId}/${mr.iid}`,
-          ]),
-          // Issue detail routes — derived from fixtures
-          ...demoIssues.flatMap((issue) => [
-            `/api/gitlab/issues/${issue.projectId}/${issue.iid}`,
-            `/api/github/issues/${issue.projectId}/${issue.iid}`,
-          ]),
-        ],
-      },
-    }),
   },
 });

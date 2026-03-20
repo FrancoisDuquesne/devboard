@@ -106,6 +106,8 @@ app/
 │   ├── useHelp.ts                 # Help modal state
 │   ├── useOnboarding.ts           # First-run welcome overlay
 │   └── useNow.ts                  # Reactive current time
+├── plugins/
+│   └── demo-fetch.client.ts       # Client-side fetch interceptor for demo/static builds
 ├── providers/                     # Provider metadata (see above)
 ├── types/                         # TypeScript type definitions
 │   ├── annotations.ts             # Annotation types (sticky notes, drawings)
@@ -150,8 +152,7 @@ server/
 │   └── worktrees/
 │       └── index.get.ts           # GET /api/worktrees — scan local worktrees
 ├── middleware/
-│   └── demo.ts                    # Demo mode interceptor (serves fixtures)
-├── fixtures/                      # Mock data for demo mode
+│   └── demo.ts                    # Demo mode interceptor (serves fixtures from shared/)
 └── utils/
     ├── gitlab-auth.ts             # GitLab auth (PAT or glab CLI)
     ├── gitlab-client.ts           # GitLab API client
@@ -162,6 +163,22 @@ server/
     ├── cache.ts                   # Shared TTL cache
     ├── worktree.ts                # Worktree scanner
     └── log.ts                     # Structured logging utility
+```
+
+### Shared (`shared/`)
+
+```
+shared/
+└── fixtures/                      # Mock data for demo mode (used by server + client)
+    ├── index.ts                   # Barrel re-exports
+    ├── constants.ts               # Demo users, projects, URL helpers
+    ├── mrs.ts                     # Demo MR list
+    ├── mention-mrs.ts             # Demo mention-MRs
+    ├── mr-detail.ts               # MR detail lookup
+    ├── issues.ts                  # Demo issue list + detail lookup
+    ├── todos.ts                   # Demo todos
+    ├── status.ts                  # Demo connection status
+    └── worktrees.ts               # Demo worktree data
 ```
 
 ### Tests (`tests/`)
@@ -198,4 +215,4 @@ Test stack: **Vitest** for unit tests, **Playwright** for E2E, **happy-dom** for
 - **Node focus**: clicking a node opens the detail drawer and highlights it — selected node gets a primary-colored glow via CSS (`has-focus` class on VueFlow wrapper), other nodes and edges dim to ~35% opacity; selection synced via `focusedNodeId` prop from `index.vue` to `MrDependencyGraph`
 - **Keyboard shortcuts**: `r` to refresh, `Escape` to close drawer, `v`/`n`/`p`/`a`/`e` for annotation tools; all single-letter shortcuts guarded by `canUseShortcut()` which checks for focused inputs
 - **Annotations**: sticky notes are Vue Flow custom nodes (drag/zoom for free), drawings are an SVG overlay outside VueFlow at `z-[5]`; toolbar at `z-10` above the drawing layer; `drawingsVisible` controls SVG visibility only, not sticky notes
-- **Demo mode**: `npm run demo` serves fixtures via `server/middleware/demo.ts` — no provider connection needed
+- **Demo mode**: `npm run demo` serves fixtures via `server/middleware/demo.ts` (dev) or `app/plugins/demo-fetch.client.ts` (static build) — no provider connection needed

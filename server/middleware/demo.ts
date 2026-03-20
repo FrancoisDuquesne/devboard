@@ -7,7 +7,7 @@ import {
   demoWorktrees,
   getDemoIssueDetail,
   getDemoMrDetail,
-} from "../fixtures";
+} from "~~/shared/fixtures";
 
 export default defineEventHandler((event) => {
   if (!process.env.DEMO_MODE) return;
@@ -17,13 +17,7 @@ export default defineEventHandler((event) => {
     return;
   }
 
-  // Strip app baseURL prefix (e.g. "/devboard/") so route matching works during prerendering
-  const rawPath = getRequestURL(event).pathname;
-  const base = useRuntimeConfig().app.baseURL;
-  const pathname =
-    base && base !== "/" && rawPath.startsWith(base)
-      ? `/${rawPath.slice(base.length)}`
-      : rawPath;
+  const pathname = getRequestURL(event).pathname;
 
   // GET /api/worktrees
   if (pathname === "/api/worktrees") {
