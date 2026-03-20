@@ -1,22 +1,26 @@
 <script setup lang="ts">
 const config = useRuntimeConfig();
+const demoMode = config.public.demoMode as boolean;
 const dismissed = ref(false);
-const visible = (config.public.demoMode as boolean) && !dismissed.value;
 </script>
 
 <template>
   <div
-    v-if="visible && !dismissed"
-    class="sticky top-0 z-30 flex items-center justify-center gap-2 rounded-b-lg bg-primary-500 px-4 py-1.5 text-sm font-medium text-white"
+    v-if="demoMode && !dismissed"
+    class="fixed inset-x-0 top-3 z-50 flex justify-center px-4"
   >
-    <UIcon name="i-lucide-eye" class="size-4 shrink-0" />
-    <span>Demo Mode — viewing sample data</span>
-    <button
-      class="ml-2 rounded-md p-0.5 hover:bg-primary-600"
-      aria-label="Dismiss demo banner"
-      @click="dismissed = true"
-    >
-      <UIcon name="i-lucide-x" class="size-3.5" />
-    </button>
+    <UAlert
+      title="Demo Mode — viewing sample data"
+      icon="i-lucide-eye"
+      color="primary"
+      variant="solid"
+      :close="{
+        icon: 'i-lucide-x',
+        color: 'primary',
+        variant: 'link',
+      }"
+      :ui="{ root: 'max-w-md shadow-lg rounded-lg' }"
+      @close="dismissed = true"
+    />
   </div>
 </template>

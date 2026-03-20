@@ -7,10 +7,10 @@ const toaster = { expand: false };
   <UApp :tooltip="tooltip" :toaster="toaster">
     <NuxtLoadingIndicator />
     <NuxtLayout>
-      <DemoBanner />
       <UMain class="relative">
         <NuxtPage />
       </UMain>
     </NuxtLayout>
+    <DemoBanner />
   </UApp>
 </template>
