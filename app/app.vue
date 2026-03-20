@@ -5,9 +5,9 @@ const toaster = { expand: false };
 
 <template>
   <UApp :tooltip="tooltip" :toaster="toaster">
-    <DemoBanner />
     <NuxtLoadingIndicator />
     <NuxtLayout>
+      <DemoBanner />
       <UMain class="relative">
         <NuxtPage />
       </UMain>
