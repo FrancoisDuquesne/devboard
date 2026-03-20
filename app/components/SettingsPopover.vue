@@ -14,24 +14,22 @@ const {
 const { enabled: worktreesEnabled, configured, scanDirs } = useWorktrees();
 
 function toggleMrScope(scope: MrScope) {
-  const idx = mrScopes.value.indexOf(scope);
-  if (idx >= 0) {
+  if (mrScopes.value.includes(scope)) {
     if (mrScopes.value.length > 1) {
-      mrScopes.value.splice(idx, 1);
+      mrScopes.value = mrScopes.value.filter((s) => s !== scope);
     }
   } else {
-    mrScopes.value.push(scope);
+    mrScopes.value = [...mrScopes.value, scope];
   }
 }
 
 function toggleIssueScope(scope: IssueScope) {
-  const idx = issueScopes.value.indexOf(scope);
-  if (idx >= 0) {
+  if (issueScopes.value.includes(scope)) {
     if (issueScopes.value.length > 1) {
-      issueScopes.value.splice(idx, 1);
+      issueScopes.value = issueScopes.value.filter((s) => s !== scope);
     }
   } else {
-    issueScopes.value.push(scope);
+    issueScopes.value = [...issueScopes.value, scope];
   }
 }
 
