@@ -8,7 +8,7 @@
 
 ---
 
-DevBoard connects to your GitLab instance and renders merge requests, issues, and todos as an interactive dependency graph. It highlights what needs your attention — blocked pipelines, pending reviews, unresolved threads — so you can focus on what matters. Everything runs as a lightweight Nuxt SPA with no database required.
+DevBoard connects to your GitLab or GitHub instance and renders merge requests, issues, and todos as an interactive dependency graph. It highlights what needs your attention — blocked pipelines, pending reviews, unresolved threads — so you can focus on what matters. Everything runs as a lightweight Nuxt SPA with no database required.
 
 ## Features
 
@@ -65,8 +65,8 @@ Add sticky notes and freehand drawings directly on the board. Notes support mark
 ### Prerequisites
 
 - Node.js 20+
-- A GitLab instance with API access
-- A GitLab personal access token (PAT) with `api` scope, **or** the [`glab` CLI](https://gitlab.com/gitlab-org/cli) authenticated
+- A GitLab instance with API access, **or** a GitHub account
+- A personal access token (GitLab PAT with `api` scope, or GitHub PAT with `repo` scope), **or** the [`glab`](https://gitlab.com/gitlab-org/cli) / [`gh`](https://cli.github.com) CLI authenticated
 
 ### Install
 
@@ -77,17 +77,22 @@ npm install
 
 ### Configure
 
-Create a `.env` file:
+Create a `.env` file for your provider:
 
 ```env
+# GitLab
 GITLAB_HOST=gitlab.example.com
 GITLAB_PRIVATE_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+
+# GitHub
+GITHUB_HOST=github.com
+GITHUB_PRIVATE_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # Optional: enable worktree tracking
 WORKTREE_SCAN_DIRS=/home/user/repos,/home/user/projects
 ```
 
-Or, if you have `glab` configured, no `.env` is needed for GitLab — DevBoard reads your token from `~/.config/glab-cli/config.yml` automatically.
+Or, if you have `glab` / `gh` CLI configured, no `.env` is needed — DevBoard reads your token from CLI config automatically.
 
 ### Run
 
@@ -101,7 +106,7 @@ npm run start     # Start production server
 
 ## Demo mode
 
-Try DevBoard without a GitLab connection — realistic mock data included:
+Try DevBoard without any provider connection — realistic mock data included:
 
 ```bash
 npm run demo
@@ -142,19 +147,22 @@ This starts the dev server with pre-built fixtures: 8 MRs across 3 projects with
 | [Vue Flow](https://vueflow.dev) | Interactive graph visualization |
 | [Dagre](https://github.com/dagrejs/dagre) | Graph layout algorithm |
 | [VueUse](https://vueuse.org) | Composable utilities |
+| [Marked](https://marked.js.org) + [DOMPurify](https://github.com/cure53/DOMPurify) | Markdown rendering |
+| [Vitest](https://vitest.dev) + [Playwright](https://playwright.dev) | Unit and E2E testing |
 | [Biome](https://biomejs.dev) | Linting and formatting |
 
 ---
 
 ## Architecture
 
-DevBoard is a Nuxt 4 SPA (SSR disabled). The frontend renders the dashboard; a Nitro server layer proxies GitLab API calls to keep tokens server-side.
+DevBoard is a Nuxt 4 SPA (SSR disabled). The frontend renders the dashboard; a Nitro server layer proxies provider API calls to keep tokens server-side. Both GitLab and GitHub are supported via a provider abstraction — see `PROVIDER_PARITY.md`.
 
 ```
 app/                          # Frontend (Vue 3 + Composition API)
 ├── pages/index.vue           # Full-screen graph dashboard
+├── providers/                # Provider metadata (GitLab, GitHub)
 ├── components/
-│   ├── graph/                # Graph node components (MR, issue, todo, group)
+│   ├── graph/                # Graph node components (MR, issue, todo, group, phantom)
 │   │   ├── StickyNoteNode.vue    # Draggable sticky note with markdown toggle
 │   │   ├── DrawingLayer.vue      # SVG overlay for freehand/arrow/rectangle drawings
 │   │   └── AnnotationToolbar.vue # Vertical tool picker with color/width pickers
@@ -164,25 +172,32 @@ app/                          # Frontend (Vue 3 + Composition API)
 │   ├── WorktreePanel.vue     # Local worktree tracking panel
 │   └── *Badge.vue            # Status, pipeline, approval, threads badges
 ├── composables/              # Reactive state and data fetching
+│   ├── useProvider.ts        # Provider factory — returns correct composables
 │   └── useAnnotations.ts     # Sticky notes + drawings state (localStorage)
 └── types/                    # TypeScript definitions
 
 server/                       # Nitro API proxy
-├── api/gitlab/               # 7 API routes
+├── api/gitlab/               # 8 API routes (mrs, issues, todos, mention-mrs, status)
+├── api/github/               # 8 API routes (same pattern as GitLab)
 ├── api/worktrees/            # Worktree scanning endpoint
-├── middleware/demo.ts         # Demo mode interceptor
-├── fixtures/                  # Mock data for demo mode
-└── utils/                    # GitLab client, auth, normalization, worktree scanner
+├── middleware/demo.ts        # Demo mode interceptor
+├── fixtures/                 # Mock data for demo mode
+└── utils/                    # Provider clients, auth, normalization, cache, worktree scanner
+
+tests/                        # Test suite
+├── fixtures/                 # Shared test data (GitLab + GitHub shapes)
+└── unit/                     # Vitest unit tests (composables, server utils, frontend utils)
 ```
 
 ### Data flow
 
-1. Frontend fetches MRs, issues, todos, mention-MRs, and worktrees in parallel via the Nitro proxy
-2. Server enriches each MR with approvals, threads, linked issues, and dependency refs
-3. Worktree scanner reads `WORKTREE_SCAN_DIRS`, runs `git worktree list` on each repo, and caches results (30s TTL)
-4. `useMrGraph` computes a Dagre layout, creating nodes and edges
-5. Vue Flow renders the interactive graph with custom node components
-6. Auto-refresh polls at the configured interval with toast notifications on changes
+1. `useProvider()` selects the active provider (GitLab or GitHub) and returns the matching composables
+2. Frontend fetches MRs, issues, todos, mention-MRs, and worktrees in parallel via the Nitro proxy
+3. Server enriches each MR with approvals, threads, linked issues, and dependency refs
+4. Worktree scanner reads `WORKTREE_SCAN_DIRS`, runs `git worktree list` on each repo, and caches results (30s TTL)
+5. `useMrGraph` computes a Dagre layout, creating nodes and edges
+6. Vue Flow renders the interactive graph with custom node components
+7. Auto-refresh polls at the configured interval with toast notifications on changes
 
 ---
 
@@ -190,11 +205,13 @@ server/                       # Nitro API proxy
 
 ```bash
 npm run dev          # Start dev server
-npm run demo         # Start with demo data (no GitLab needed)
+npm run demo         # Start with demo data (no provider connection needed)
 npm run build        # Production build
 npm run lint         # Check with Biome
 npm run lint:fix     # Auto-fix lint issues
 npm run format       # Format with Biome
+npm run test         # Run unit tests (Vitest)
+npm run test:watch   # Run tests in watch mode
 npm run screenshot   # Capture screenshots (requires demo mode)
 ```
 
