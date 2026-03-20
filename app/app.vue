@@ -5,6 +5,7 @@ const toaster = { expand: false };
 
 <template>
   <UApp :tooltip="tooltip" :toaster="toaster">
+    <DemoBanner />
     <NuxtLoadingIndicator />
     <NuxtLayout>
       <UMain class="relative">

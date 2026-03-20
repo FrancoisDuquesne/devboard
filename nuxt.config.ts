@@ -1,5 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
+
 export default defineNuxtConfig({
   devtools: { enabled: process.env.NODE_ENV !== "production" },
   ssr: false,
@@ -26,8 +28,14 @@ export default defineNuxtConfig({
       ],
     },
   },
+  runtimeConfig: {
+    public: {
+      demoMode: process.env.DEMO_MODE === "true",
+      githubPages: isGitHubPages,
+    },
+  },
   app: {
-    baseURL: "/",
+    baseURL: isGitHubPages ? "/devboard/" : "/",
     head: {
       title: "DevBoard",
       link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
@@ -53,4 +61,50 @@ export default defineNuxtConfig({
       },
     },
   },
+  ...(isGitHubPages && {
+    nitro: {
+      prerender: {
+        routes: [
+          // List endpoints
+          "/api/gitlab/status",
+          "/api/github/status",
+          "/api/gitlab/mrs",
+          "/api/github/mrs",
+          "/api/gitlab/issues",
+          "/api/github/issues",
+          "/api/gitlab/todos",
+          "/api/github/todos",
+          "/api/gitlab/mention-mrs",
+          "/api/github/mention-mrs",
+          "/api/worktrees",
+          // MR detail routes (projectId/iid from demo fixtures)
+          "/api/gitlab/mrs/103/14",
+          "/api/github/mrs/103/14",
+          "/api/gitlab/mrs/101/42",
+          "/api/github/mrs/101/42",
+          "/api/gitlab/mrs/102/87",
+          "/api/github/mrs/102/87",
+          "/api/gitlab/mrs/101/43",
+          "/api/github/mrs/101/43",
+          "/api/gitlab/mrs/101/38",
+          "/api/github/mrs/101/38",
+          "/api/gitlab/mrs/102/91",
+          "/api/github/mrs/102/91",
+          "/api/gitlab/mrs/101/39",
+          "/api/github/mrs/101/39",
+          "/api/gitlab/mrs/103/9",
+          "/api/github/mrs/103/9",
+          "/api/gitlab/mrs/103/12",
+          "/api/github/mrs/103/12",
+          // Issue detail routes
+          "/api/gitlab/issues/101/21",
+          "/api/github/issues/101/21",
+          "/api/gitlab/issues/102/55",
+          "/api/github/issues/102/55",
+          "/api/gitlab/issues/103/8",
+          "/api/github/issues/103/8",
+        ],
+      },
+    },
+  }),
 });
