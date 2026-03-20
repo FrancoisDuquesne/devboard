@@ -12,7 +12,7 @@ import {
 export default defineEventHandler((event) => {
   if (!process.env.DEMO_MODE) return;
 
-  if (process.env.NODE_ENV === "production" && !process.env.GITHUB_PAGES) {
+  if (process.env.NODE_ENV === "production" && !import.meta.prerender) {
     console.error("DEMO_MODE must not be enabled in production — ignoring");
     return;
   }

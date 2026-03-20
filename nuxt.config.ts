@@ -61,11 +61,11 @@ export default defineNuxtConfig({
       },
     },
   },
-  ...(isGitHubPages && {
-    nitro: {
+  nitro: {
+    ...(isGitHubPages && {
       prerender: {
+        // Keep in sync with server/fixtures/ — update when adding/removing demo MRs or issues.
         routes: [
-          // List endpoints
           "/api/gitlab/status",
           "/api/github/status",
           "/api/gitlab/mrs",
@@ -77,34 +77,32 @@ export default defineNuxtConfig({
           "/api/gitlab/mention-mrs",
           "/api/github/mention-mrs",
           "/api/worktrees",
-          // MR detail routes (projectId/iid from demo fixtures)
-          "/api/gitlab/mrs/103/14",
-          "/api/github/mrs/103/14",
-          "/api/gitlab/mrs/101/42",
-          "/api/github/mrs/101/42",
-          "/api/gitlab/mrs/102/87",
-          "/api/github/mrs/102/87",
-          "/api/gitlab/mrs/101/43",
-          "/api/github/mrs/101/43",
-          "/api/gitlab/mrs/101/38",
-          "/api/github/mrs/101/38",
-          "/api/gitlab/mrs/102/91",
-          "/api/github/mrs/102/91",
-          "/api/gitlab/mrs/101/39",
-          "/api/github/mrs/101/39",
-          "/api/gitlab/mrs/103/9",
-          "/api/github/mrs/103/9",
-          "/api/gitlab/mrs/103/12",
-          "/api/github/mrs/103/12",
-          // Issue detail routes
-          "/api/gitlab/issues/101/21",
-          "/api/github/issues/101/21",
-          "/api/gitlab/issues/102/55",
-          "/api/github/issues/102/55",
-          "/api/gitlab/issues/103/8",
-          "/api/github/issues/103/8",
+          // MR detail routes (projectId/iid from server/fixtures/mrs.ts + mention-mrs.ts)
+          ...[
+            [103, 14],
+            [101, 42],
+            [102, 87],
+            [101, 43],
+            [101, 38],
+            [102, 91],
+            [101, 39],
+            [103, 9],
+            [103, 12],
+          ].flatMap(([p, i]) => [
+            `/api/gitlab/mrs/${p}/${i}`,
+            `/api/github/mrs/${p}/${i}`,
+          ]),
+          // Issue detail routes (projectId/iid from server/fixtures/issues.ts)
+          ...[
+            [101, 21],
+            [102, 55],
+            [103, 8],
+          ].flatMap(([p, i]) => [
+            `/api/gitlab/issues/${p}/${i}`,
+            `/api/github/issues/${p}/${i}`,
+          ]),
         ],
       },
-    },
-  }),
+    }),
+  },
 });
