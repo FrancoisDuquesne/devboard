@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const open = defineModel<boolean>("open", { default: false });
 
-const { fetchIssueDetail } = useIssues();
+const { fetchIssueDetail, meta } = useProvider();
 const now = useNow();
 const { copy } = useClipboard();
 
@@ -38,7 +38,7 @@ watch(
   },
 );
 
-function openInGitLab() {
+function openInProvider() {
   safeOpen(detail.value?.webUrl);
 }
 </script>
@@ -162,12 +162,12 @@ function openInGitLab() {
         </div>
 
         <UButton
-          label="Open in GitLab"
+          :label="`Open in ${meta.name}`"
           icon="i-lucide-external-link"
           variant="soft"
           color="primary"
           block
-          @click="openInGitLab"
+          @click="openInProvider"
         />
       </div>
     </template>

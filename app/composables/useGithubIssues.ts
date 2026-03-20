@@ -11,7 +11,7 @@ let fetchController: AbortController | null = null;
 let issuesEnabledWatcherActive = false;
 let scopesWatcherActive = false;
 
-export function useIssues() {
+export function useGithubIssues() {
   const { autoRefreshInterval, fetchIssuesEnabled, issueScopes } = usePreferences();
 
   if (!intervalWatcherActive) {
@@ -57,7 +57,7 @@ export function useIssues() {
     loading.value = true;
     error.value = null;
     try {
-      issues.value = await $fetch<DevBoardIssue[]>("/api/gitlab/issues", {
+      issues.value = await $fetch<DevBoardIssue[]>("/api/github/issues", {
         signal,
         params: { scopes: issueScopes.value.join(",") },
       });
@@ -75,7 +75,7 @@ export function useIssues() {
   ): Promise<DevBoardIssueDetail | null> {
     try {
       return await $fetch<DevBoardIssueDetail>(
-        `/api/gitlab/issues/${projectId}/${iid}`,
+        `/api/github/issues/${projectId}/${iid}`,
       );
     } catch {
       return null;

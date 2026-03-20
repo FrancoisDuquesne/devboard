@@ -12,6 +12,7 @@ defineEmits<{
 }>();
 
 const config = computed(() => actionConfig[props.action]);
+const { meta } = useProvider();
 </script>
 
 <template>
@@ -34,7 +35,7 @@ const config = computed(() => actionConfig[props.action]);
 
     <div class="min-w-0 flex-1">
       <p class="text-sm leading-snug">
-        <span class="font-medium">!{{ mr.iid }} {{ mr.title }}</span>
+        <span class="font-medium">{{ meta.mrPrefix + mr.iid }} {{ mr.title }}</span>
       </p>
 
       <div class="mt-1 flex items-center gap-2 text-xs text-dimmed">

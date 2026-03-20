@@ -1,18 +1,48 @@
 <script setup lang="ts">
-const { status, loading: connectionLoading, checkConnection } = useGitlabAuth();
-const { autoRefreshInterval, mrScopes, fetchTodosEnabled, fetchIssuesEnabled } =
-  usePreferences();
+import type { IssueScope, MrScope, ProviderId } from "~/types";
+
+const { status, authLoading: connectionLoading, checkConnection, meta } = useProvider();
+const {
+  autoRefreshInterval,
+  mrScopes,
+  fetchMrsEnabled,
+  fetchTodosEnabled,
+  fetchIssuesEnabled,
+  issueScopes,
+  provider,
+} = usePreferences();
 const { enabled: worktreesEnabled, configured, scanDirs } = useWorktrees();
 
-function toggleScope(scope: "authored" | "assigned" | "reviewer") {
-  const idx = mrScopes.value.indexOf(scope);
-  if (idx >= 0) {
+function toggleMrScope(scope: MrScope) {
+  if (mrScopes.value.includes(scope)) {
     if (mrScopes.value.length > 1) {
-      mrScopes.value.splice(idx, 1);
+      mrScopes.value = mrScopes.value.filter((s) => s !== scope);
     }
   } else {
-    mrScopes.value.push(scope);
+    mrScopes.value = [...mrScopes.value, scope];
   }
+}
+
+function toggleIssueScope(scope: IssueScope) {
+  if (issueScopes.value.includes(scope)) {
+    if (issueScopes.value.length > 1) {
+      issueScopes.value = issueScopes.value.filter((s) => s !== scope);
+    }
+  } else {
+    issueScopes.value = [...issueScopes.value, scope];
+  }
+}
+
+const providerTabs = [
+  { label: "GitLab", value: "gitlab", icon: "i-simple-icons-gitlab" },
+  { label: "GitHub", value: "github", icon: "i-simple-icons-github" },
+];
+
+function onProviderChange(value: string) {
+  const id = value as ProviderId;
+  if (id === provider.value) return;
+  provider.value = id;
+  window.location.reload();
 }
 
 const connectionStatus = computed(() => {
@@ -48,9 +78,23 @@ function toggleColorMode() {
 
     <template #content>
       <div class="w-64 space-y-4 p-4 sm:w-72">
-        <!-- GitLab -->
+        <!-- Provider selector -->
         <div class="space-y-3">
-          <p class="text-xs font-medium text-dimmed">GitLab</p>
+          <p class="text-xs font-medium text-dimmed">Provider</p>
+          <UTabs
+            :model-value="provider"
+            :items="providerTabs"
+            :content="false"
+            :ui="{ list: 'w-full', trigger: 'flex-1 justify-center' }"
+            @update:model-value="onProviderChange"
+          />
+        </div>
+
+        <USeparator />
+
+        <!-- Connection -->
+        <div class="space-y-3">
+          <p class="text-xs font-medium text-dimmed">{{ meta.name }}</p>
           <div class="flex items-center gap-1.5 rounded-md bg-muted p-1.5 text-sm">
             <UIcon
               v-if="connectionStatus === 'connected'"
@@ -81,14 +125,16 @@ function toggleColorMode() {
           <div v-if="status && !status.connected" class="space-y-1.5">
             <p class="text-xs text-dimmed">
               Run
-              <code class="rounded bg-muted px-1 py-0.5">glab auth login</code>
+              <code class="rounded bg-muted px-1 py-0.5">
+                {{ meta.authCliCommand }}
+              </code>
               or add to
               <code class="rounded bg-muted px-1 py-0.5">.env</code>:
             </p>
             <pre
-              class="rounded-md bg-elevated px-2 py-1 text-xs leading-relaxed"
-            ><code>GITLAB_HOST=gitlab.example.com
-GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
+              class="overflow-x-auto rounded-md bg-elevated px-2 py-1 text-xs leading-relaxed"
+            ><code>{{ meta.authEnvVars.host }}={{ meta.authHostExample }}
+{{ meta.authEnvVars.token }}={{ meta.authTokenExample }}</code></pre>
             <p class="text-xs text-dimmed">Then restart the dev server.</p>
             <UButton
               icon="i-lucide-refresh-cw"
@@ -103,45 +149,69 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
           </div>
 
           <template v-if="status?.connected">
-            <!-- Data sources -->
+            <!-- MRs / PRs -->
             <div class="space-y-1.5">
-              <div class="flex items-center gap-2 px-2">
-                <UIcon name="i-lucide-git-pull-request" class="size-4 text-dimmed" />
-                <span class="text-sm">Merge requests</span>
+              <div class="flex items-center justify-between px-2">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-git-pull-request" class="size-4 text-dimmed" />
+                  <span class="text-sm capitalize">{{ meta.mrLabelPlural }}</span>
+                </div>
+                <USwitch
+                  v-model="fetchMrsEnabled"
+                  size="sm"
+                  :aria-label="`Fetch ${meta.mrLabelPlural}`"
+                />
               </div>
-              <div class="flex flex-wrap gap-1 pl-8">
+              <div v-if="fetchMrsEnabled" class="flex flex-wrap gap-1 pl-8">
                 <UButton
                   v-for="scope in (['authored', 'assigned', 'reviewer'] as const)"
                   :key="scope"
                   :variant="mrScopes.includes(scope) ? 'soft' : 'outline'"
                   :color="mrScopes.includes(scope) ? 'primary' : 'neutral'"
                   size="xs"
-                  :aria-label="`Fetch ${scope} MRs`"
-                  @click="toggleScope(scope)"
+                  :aria-label="`Fetch ${scope} ${meta.mrLabelPlural}`"
+                  @click="toggleMrScope(scope)"
                 >
                   {{ scope.charAt(0).toUpperCase() + scope.slice(1) }}
                 </UButton>
               </div>
             </div>
 
+            <!-- Issues -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between px-2">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-circle-dot" class="size-4 text-dimmed" />
+                  <span class="text-sm">Issues</span>
+                </div>
+                <USwitch
+                  v-model="fetchIssuesEnabled"
+                  size="sm"
+                  aria-label="Fetch issues"
+                />
+              </div>
+              <div v-if="fetchIssuesEnabled" class="flex flex-wrap gap-1 pl-8">
+                <UButton
+                  v-for="scope in (['assigned', 'created'] as const)"
+                  :key="scope"
+                  :variant="issueScopes.includes(scope) ? 'soft' : 'outline'"
+                  :color="issueScopes.includes(scope) ? 'primary' : 'neutral'"
+                  size="xs"
+                  :aria-label="`Fetch ${scope} issues`"
+                  @click="toggleIssueScope(scope)"
+                >
+                  {{ scope.charAt(0).toUpperCase() + scope.slice(1) }}
+                </UButton>
+              </div>
+            </div>
+
+            <!-- Todos -->
             <div class="flex items-center justify-between px-2">
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-list-todo" class="size-4 text-dimmed" />
                 <span class="text-sm">Todos</span>
               </div>
               <USwitch v-model="fetchTodosEnabled" size="sm" aria-label="Fetch todos" />
-            </div>
-
-            <div class="flex items-center justify-between px-2">
-              <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-circle-dot" class="size-4 text-dimmed" />
-                <span class="text-sm">Issues</span>
-              </div>
-              <USwitch
-                v-model="fetchIssuesEnabled"
-                size="sm"
-                aria-label="Fetch issues"
-              />
             </div>
 
             <!-- Auto-refresh -->
@@ -205,7 +275,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
         <!-- Quick actions -->
         <div class="space-y-0.5">
           <button
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             @click="toggleColorMode"
           >
             <UIcon
@@ -216,7 +286,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
             <span class="ml-auto text-xs text-dimmed">Toggle</span>
           </button>
           <button
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             @click="helpOpen = true"
           >
             <UIcon name="i-lucide-keyboard" class="size-4 text-dimmed" />
@@ -224,7 +294,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
             <UKbd value="?" size="sm" class="ml-auto" />
           </button>
           <button
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             @click="resetWelcome"
           >
             <UIcon name="i-lucide-circle-help" class="size-4 text-dimmed" />

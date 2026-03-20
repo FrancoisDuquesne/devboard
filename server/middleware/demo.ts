@@ -24,20 +24,25 @@ export default defineEventHandler((event) => {
     return demoWorktrees;
   }
 
-  if (!pathname.startsWith("/api/gitlab/")) return;
+  if (!pathname.startsWith("/api/gitlab/") && !pathname.startsWith("/api/github/"))
+    return;
 
-  // GET /api/gitlab/status
-  if (pathname === "/api/gitlab/status") {
-    return demoStatus;
+  // Normalize: treat /api/github/* the same as /api/gitlab/* for demo data
+  const normalized = pathname.replace(/^\/api\/github\//, "/api/gitlab/");
+
+  // GET /api/gitlab/status or /api/github/status
+  if (normalized === "/api/gitlab/status") {
+    const isGitHub = pathname.startsWith("/api/github/");
+    return isGitHub ? { ...demoStatus, host: "github.com" } : demoStatus;
   }
 
-  // GET /api/gitlab/mrs (exact match, not sub-routes)
-  if (pathname === "/api/gitlab/mrs") {
+  // GET /api/gitlab/mrs or /api/github/mrs (exact match, not sub-routes)
+  if (normalized === "/api/gitlab/mrs") {
     return demoMrs;
   }
 
-  // GET /api/gitlab/mrs/:projectId/:iid
-  const mrDetailMatch = pathname.match(/^\/api\/gitlab\/mrs\/(\d+)\/(\d+)$/);
+  // GET /api/gitlab/mrs/:projectId/:iid or /api/github/mrs/:projectId/:iid
+  const mrDetailMatch = normalized.match(/^\/api\/gitlab\/mrs\/(\d+)\/(\d+)$/);
   if (mrDetailMatch) {
     const projectId = Number(mrDetailMatch[1]);
     const iid = Number(mrDetailMatch[2]);
@@ -46,8 +51,8 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 404, statusMessage: "MR not found" });
   }
 
-  // GET /api/gitlab/issues/:projectId/:iid
-  const issueDetailMatch = pathname.match(/^\/api\/gitlab\/issues\/(\d+)\/(\d+)$/);
+  // GET /api/gitlab/issues/:projectId/:iid or /api/github/issues/:projectId/:iid
+  const issueDetailMatch = normalized.match(/^\/api\/gitlab\/issues\/(\d+)\/(\d+)$/);
   if (issueDetailMatch) {
     const projectId = Number(issueDetailMatch[1]);
     const iid = Number(issueDetailMatch[2]);
@@ -56,25 +61,25 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 404, statusMessage: "Issue not found" });
   }
 
-  // GET /api/gitlab/issues
-  if (pathname === "/api/gitlab/issues") {
+  // GET /api/gitlab/issues or /api/github/issues
+  if (normalized === "/api/gitlab/issues") {
     return demoIssues;
   }
 
-  // GET /api/gitlab/todos or POST /api/gitlab/todos/:id
-  if (pathname === "/api/gitlab/todos") {
+  // GET /api/gitlab/todos or POST /api/gitlab/todos/:id (or /api/github/ variants)
+  if (normalized === "/api/gitlab/todos") {
     return demoTodos;
   }
-  if (/^\/api\/gitlab\/todos\/\d+$/.test(pathname)) {
+  if (/^\/api\/gitlab\/todos\/\d+$/.test(normalized)) {
     return { success: true };
   }
 
-  // GET /api/gitlab/mention-mrs
-  if (pathname === "/api/gitlab/mention-mrs") {
+  // GET /api/gitlab/mention-mrs or /api/github/mention-mrs
+  if (normalized === "/api/gitlab/mention-mrs") {
     return demoMentionMrs;
   }
 
-  // Catch-all: block unhandled /api/gitlab/ routes in demo mode
+  // Catch-all: block unhandled provider routes in demo mode
   throw createError({
     statusCode: 501,
     statusMessage: "Not available in demo mode",

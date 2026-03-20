@@ -11,8 +11,8 @@ let fetchController: AbortController | null = null;
 let scopesWatcherActive = false;
 let mrsEnabledWatcherActive = false;
 
-export function useGitlab(opts?: { mrPrefix?: string }) {
-  const mrPrefix = opts?.mrPrefix ?? "!";
+export function useGithub(opts?: { mrPrefix?: string }) {
+  const mrPrefix = opts?.mrPrefix ?? "#";
   const { autoRefreshInterval, mrScopes, fetchMrsEnabled } = usePreferences();
   const toast = useToast();
 
@@ -48,7 +48,7 @@ export function useGitlab(opts?: { mrPrefix?: string }) {
     });
   }
 
-  const { status: authStatus, checkConnection } = useGitlabAuth();
+  const { status: authStatus, checkConnection } = useGithubAuth();
 
   async function fetchMrs() {
     if (!fetchMrsEnabled.value || mrScopes.value.length === 0) {
@@ -64,7 +64,7 @@ export function useGitlab(opts?: { mrPrefix?: string }) {
     error.value = null;
     try {
       const previous = mrs.value;
-      const fresh = await $fetch<DevBoardMR[]>("/api/gitlab/mrs", {
+      const fresh = await $fetch<DevBoardMR[]>("/api/github/mrs", {
         signal,
         params: { scopes: mrScopes.value.join(",") },
       });
@@ -82,7 +82,7 @@ export function useGitlab(opts?: { mrPrefix?: string }) {
       }
     } catch (e) {
       if (signal.aborted) return;
-      error.value = e instanceof Error ? e.message : "Failed to fetch merge requests";
+      error.value = e instanceof Error ? e.message : "Failed to fetch pull requests";
     } finally {
       if (!signal.aborted) loading.value = false;
     }
@@ -92,11 +92,11 @@ export function useGitlab(opts?: { mrPrefix?: string }) {
     const prevMap = new Map(previous.map((mr) => [mr.id, mr]));
     const freshMap = new Map(fresh.map((mr) => [mr.id, mr]));
 
-    // New MRs
+    // New PRs
     for (const mr of fresh) {
       if (!prevMap.has(mr.id)) {
         toast.add({
-          title: `New MR: ${mrPrefix}${mr.iid} ${mr.title}`,
+          title: `New PR: ${mrPrefix}${mr.iid} ${mr.title}`,
           icon: "i-lucide-git-pull-request",
           color: "info",
         });
@@ -107,7 +107,7 @@ export function useGitlab(opts?: { mrPrefix?: string }) {
     for (const mr of previous) {
       if (!freshMap.has(mr.id)) {
         toast.add({
-          title: `MR removed: ${mrPrefix}${mr.iid} ${mr.title}`,
+          title: `PR removed: ${mrPrefix}${mr.iid} ${mr.title}`,
           icon: "i-lucide-git-merge",
           color: "success",
         });
@@ -144,7 +144,7 @@ export function useGitlab(opts?: { mrPrefix?: string }) {
     iid: number,
   ): Promise<DevBoardMRDetail | null> {
     try {
-      return await $fetch<DevBoardMRDetail>(`/api/gitlab/mrs/${projectId}/${iid}`);
+      return await $fetch<DevBoardMRDetail>(`/api/github/mrs/${projectId}/${iid}`);
     } catch {
       return null;
     }

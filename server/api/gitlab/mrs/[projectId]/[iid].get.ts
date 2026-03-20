@@ -62,7 +62,6 @@ export default defineEventHandler(async (event) => {
 
   const detail: DevBoardMRDetail = {
     ...normalized,
-    description: mr.description ?? "",
     closingIssues: closingIssues.map(normalizeIssue),
     relatedMrs: relatedMrs.map((rmr) => ({
       iid: rmr.iid,

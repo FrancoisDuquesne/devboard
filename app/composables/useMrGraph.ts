@@ -34,11 +34,13 @@ interface ParsedRef {
 
 /**
  * Parse a dependency reference string.
- *   "!123"              → same-project, iid 123
- *   "group/project!456" → cross-project
+ *   "!123"              → same-project, iid 123 (GitLab)
+ *   "group/project!456" → cross-project (GitLab)
+ *   "#123"              → same-project, iid 123 (GitHub)
+ *   "owner/repo#456"    → cross-project (GitHub)
  */
 function parseDependencyRef(ref: string): ParsedRef | null {
-  const match = ref.match(/^(?:(.+)!)?!?(\d+)$/);
+  const match = ref.match(/^(?:(.+)[!#])?[!#]?(\d+)$/);
   if (!match) return null;
   return {
     projectPath: match[1] || null,
@@ -462,6 +464,9 @@ export function useMrGraph(
   todos?: Readonly<Ref<DevBoardTodo[]>>,
   groupBy?: Readonly<Ref<GraphGroupBy>>,
 ) {
+  const {
+    meta: { mrPrefix },
+  } = useProvider();
   const colorMode = useColorMode();
 
   const edgeColors = computed<EdgeColors>(() => {
@@ -590,7 +595,7 @@ export function useMrGraph(
     for (const mr of mrs.value) {
       const nodeId = String(mr.id);
       mrById.set(mr.id, nodeId);
-      mrByRef.set(`${mr.projectPath}!${mr.iid}`, nodeId);
+      mrByRef.set(`${mr.projectPath}${mrPrefix}${mr.iid}`, nodeId);
     }
 
     const issueById = new Map<number, string>();
@@ -641,7 +646,7 @@ export function useMrGraph(
         if (todo.targetType === "MergeRequest") {
           targetNodeId =
             mrById.get(todo.target.id) ??
-            mrByRef.get(`${todo.projectPath}!${ref}`) ??
+            mrByRef.get(`${todo.projectPath}${mrPrefix}${ref}`) ??
             null;
         } else if (todo.targetType === "Issue") {
           targetNodeId =

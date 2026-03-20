@@ -40,10 +40,17 @@ const {
   nodeTypeFilter,
   graphGroupBy,
 } = usePreferences();
-const { status, checkConnection, loading: connectionLoading } = useGitlabAuth();
-const { loading: refreshLoading, fetchMrs } = useGitlab();
+const {
+  status,
+  checkConnection,
+  authLoading: connectionLoading,
+  mrsLoading: refreshLoading,
+  fetchMrs,
+  todoPanelOpen: panelOpen,
+  fetchTodos,
+  meta,
+} = useProvider();
 const { helpOpen } = useHelp();
-const { panelOpen, fetchTodos } = useTodos();
 const { totalCount } = useNotifications();
 const {
   enabled: worktreeEnabled,
@@ -57,7 +64,7 @@ const visibleWorktreeCount = computed(
       .length,
 );
 
-const legendCollapsed = ref(false);
+const legendCollapsed = useLocalStorage("devboard:legend-collapsed", false);
 const graphWrapperRef = ref<HTMLDivElement | null>(null);
 
 // Annotation tools
@@ -80,8 +87,8 @@ const filteredAndSortedMrs = computed(() => {
     });
   }
 
-  if (projectFilter.value) {
-    result = result.filter((mr) => mr.projectPath === projectFilter.value);
+  if (projectFilter.value.length > 0) {
+    result = result.filter((mr) => projectFilter.value.includes(mr.projectPath));
   }
 
   if (pipelineFilter.value !== "all") {
@@ -125,8 +132,8 @@ const filteredMrs = computed(() => (showMrs.value ? mrsWithAliases.value : []));
 const filteredIssues = computed(() => {
   if (!nodeTypeFilter.value.includes("issue")) return [];
   let result = [...(props.issues ?? [])];
-  if (projectFilter.value) {
-    result = result.filter((i) => i.projectPath === projectFilter.value);
+  if (projectFilter.value.length > 0) {
+    result = result.filter((i) => projectFilter.value.includes(i.projectPath ?? ""));
   }
   result.sort((a, b) => {
     let cmp = 0;
@@ -145,8 +152,8 @@ const filteredIssues = computed(() => {
 const filteredTodos = computed(() => {
   if (!nodeTypeFilter.value.includes("todo")) return [];
   let result = [...(props.todos ?? [])];
-  if (projectFilter.value) {
-    result = result.filter((t) => t.projectPath === projectFilter.value);
+  if (projectFilter.value.length > 0) {
+    result = result.filter((t) => projectFilter.value.includes(t.projectPath));
   }
   result.sort((a, b) => {
     let cmp = 0;
@@ -315,7 +322,7 @@ const zoomOnScroll = computed(() => !isInteractiveOverlay.value);
 const isFiltered = computed(
   () =>
     roleFilter.value !== "all" ||
-    projectFilter.value !== null ||
+    projectFilter.value.length > 0 ||
     pipelineFilter.value !== "all" ||
     nodeTypeFilter.value.length < 3,
 );
@@ -425,32 +432,25 @@ const isFiltered = computed(
               >
                 <UIcon name="i-lucide-plug-zap" class="size-6 text-warning" />
               </div>
-              <h3 class="text-base font-semibold">Connect to GitLab</h3>
+              <h3 class="text-base font-semibold">Connect to {{ meta.name }}</h3>
               <p class="text-sm text-dimmed">
-                DevBoard needs a GitLab host and access token to display your merge
-                requests.
+                DevBoard needs a {{ meta.name }} host and access token to display your
+                {{ meta.mrLabelPlural }}.
               </p>
             </div>
 
             <div class="space-y-3 rounded-lg border border-muted p-4 text-left">
               <p class="text-xs font-semibold uppercase tracking-wide text-dimmed">
-                Option 1 — glab CLI (easiest)
+                Option 1 — CLI (easiest)
               </p>
               <div class="space-y-1.5 text-sm">
-                <p class="text-dimmed">
-                  If you have
-                  <code class="rounded bg-muted px-1 py-0.5 text-xs">glab</code>
-                  installed:
-                </p>
+                <p class="text-dimmed">Run the following command:</p>
                 <pre
                   class="rounded-md bg-muted px-3 py-2 text-xs leading-relaxed"
-                ><code>glab auth login</code></pre>
+                ><code>{{ meta.authCliCommand }}</code></pre>
                 <p class="text-xs text-dimmed">
-                  Host and token are stored in
-                  <code class="rounded bg-muted px-1 py-0.5 text-xs">
-                    ~/.config/glab-cli/config.yml
-                  </code>
-                  and picked up automatically. Then restart the dev server.
+                  Host and token are picked up automatically. Then restart the dev
+                  server.
                 </p>
               </div>
             </div>
@@ -466,11 +466,13 @@ const isFiltered = computed(
                 </p>
                 <pre
                   class="rounded-md bg-muted px-3 py-2 text-xs leading-relaxed"
-                ><code>GITLAB_HOST=gitlab.example.com
-GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
+                ><code>{{ meta.authEnvVars.host }}=gitlab.example.com
+{{ meta.authEnvVars.token }}=glpat-xxxx</code></pre>
                 <p class="text-xs text-dimmed">
                   The token needs
-                  <code class="rounded bg-muted px-1 py-0.5 text-xs">api</code>
+                  <code class="rounded bg-muted px-1 py-0.5 text-xs">
+                    {{ meta.authTokenScope }}
+                  </code>
                   scope. Then restart the dev server.
                 </p>
               </div>
@@ -525,7 +527,7 @@ GITLAB_PRIVATE_TOKEN=glpat-xxxx</code></pre>
           class="flex items-center gap-1 rounded-lg border border-muted bg-default/90 p-1 backdrop-blur shadow-lg"
         >
           <UTooltip
-            :text="status?.connected ? `Connected to ${status.host} as ${status.username}` : status?.error || 'Disconnected from GitLab'"
+            :text="status?.connected ? `Connected to ${status.host} as ${status.username}` : status?.error || `Disconnected from ${meta.name}`"
           >
             <span
               class="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-dimmed"

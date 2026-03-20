@@ -7,7 +7,7 @@ const emit = defineEmits<{
 }>();
 
 const { worktrees, worktreesByRepo, panelOpen } = useWorktrees();
-const { mrs } = useGitlab();
+const { mrs } = useProvider();
 const { hiddenWorktreePaths, hideWorktree, unhideWorktree } = usePreferences();
 const { copy } = useClipboard();
 const copiedPath = ref<string | null>(null);

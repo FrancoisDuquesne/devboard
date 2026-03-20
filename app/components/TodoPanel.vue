@@ -5,15 +5,22 @@ const emit = defineEmits<{
   "select-mr": [mr: DevBoardMR];
 }>();
 
-const { todos, mentions, pendingCount, panelOpen, markAsDone, markAllAsDone } =
-  useTodos();
+const {
+  todos,
+  mentions,
+  pendingCount,
+  todoPanelOpen: panelOpen,
+  markAsDone,
+  markAllAsDone,
+  mrs,
+  status,
+  meta,
+} = useProvider();
 const { actionItems, actionCount, totalCount } = useNotifications();
-const { mrs } = useGitlab();
-const { status } = useGitlabAuth();
 
-const gitlabTodosUrl = computed(() => {
+const providerTodosUrl = computed(() => {
   if (!status.value?.host) return null;
-  return `https://${status.value.host}/dashboard/todos`;
+  return meta.dashboardTodosPath(status.value.host);
 });
 
 const activeTab = ref<string>("all");
@@ -91,10 +98,10 @@ function onNavigateMr(mr: DevBoardMR) {
             @click="markAllAsDone"
           />
           <UButton
-            v-if="gitlabTodosUrl"
-            :to="gitlabTodosUrl"
+            v-if="providerTodosUrl"
+            :to="providerTodosUrl"
             target="_blank"
-            label="Open in GitLab"
+            :label="`Open in ${meta.name}`"
             icon="i-lucide-external-link"
             variant="ghost"
             color="neutral"
