@@ -14,13 +14,26 @@ async function getProjectPath(projectId: number): Promise<string> {
 }
 
 export default defineEventHandler(async () => {
-  const issues = await gitlabFetchAllPages<GitLabIssue>("/issues", {
-    scope: "assigned_to_me",
-    state: "opened",
-  });
+  // Fetch both assigned and created issues (mirrors GitHub provider behavior)
+  const [assigned, created] = await Promise.all([
+    gitlabFetchAllPages<GitLabIssue>("/issues", {
+      scope: "assigned_to_me",
+      state: "opened",
+    }),
+    gitlabFetchAllPages<GitLabIssue>("/issues", {
+      scope: "created_by_me",
+      state: "opened",
+    }),
+  ]);
+
+  // Deduplicate by issue id
+  const issueMap = new Map<number, GitLabIssue>();
+  for (const issue of [...assigned, ...created]) {
+    issueMap.set(issue.id, issue);
+  }
 
   const enriched = await Promise.all(
-    issues.map(async (issue) => {
+    Array.from(issueMap.values()).map(async (issue) => {
       const projectPath = await getProjectPath(issue.project_id);
       return normalizeIssue(issue, projectPath);
     }),

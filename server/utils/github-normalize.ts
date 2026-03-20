@@ -11,6 +11,7 @@ import type {
   PipelineStatus,
   TodoAction,
 } from "~~/app/types";
+import { getGitHubHost } from "./github-auth";
 
 export function resolvePrStatus(pr: GitHubPullRequest): MrStatus {
   if (pr.merged) return "merged";
@@ -174,8 +175,9 @@ export function normalizeNotification(notification: GitHubNotification): DevBoar
   const subjectType = notification.subject.type;
   const pathSegment =
     subjectType === "PullRequest" ? "pull" : subjectType === "Issue" ? "issues" : "";
+  const host = getGitHubHost();
   const targetUrl =
-    iid > 0 && pathSegment ? `https://github.com/${repo}/${pathSegment}/${iid}` : "";
+    iid > 0 && pathSegment ? `https://${host}/${repo}/${pathSegment}/${iid}` : "";
 
   return {
     id: Number(notification.id),
