@@ -64,7 +64,7 @@ const visibleWorktreeCount = computed(
       .length,
 );
 
-const legendCollapsed = ref(false);
+const legendCollapsed = useLocalStorage("devboard:legend-collapsed", false);
 const graphWrapperRef = ref<HTMLDivElement | null>(null);
 
 // Annotation tools

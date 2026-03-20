@@ -5,9 +5,12 @@ const welcomeOpen = ref(false);
 
 export function useOnboarding() {
   function showWelcomeIfFirstRun() {
-    if (!hasSeenWelcome.value) {
-      welcomeOpen.value = true;
-    }
+    // nextTick ensures useLocalStorage has hydrated from storage
+    nextTick(() => {
+      if (!hasSeenWelcome.value) {
+        welcomeOpen.value = true;
+      }
+    });
   }
 
   function dismissWelcome() {
