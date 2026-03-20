@@ -1,9 +1,10 @@
 import { githubMeta, gitlabMeta } from "~/providers";
+import type { Provider } from "~/types";
 
-let gitlabCached: ReturnType<typeof createGitLabProvider> | null = null;
-let githubCached: ReturnType<typeof createGitHubProvider> | null = null;
+let gitlabCached: Provider | null = null;
+let githubCached: Provider | null = null;
 
-function createGitLabProvider() {
+function createGitLabProvider(): Provider {
   const { status, loading: authLoading, checkConnection } = useGitlabAuth();
   const {
     mrs,
@@ -78,7 +79,7 @@ function createGitLabProvider() {
   };
 }
 
-function createGitHubProvider() {
+function createGitHubProvider(): Provider {
   const { status, loading: authLoading, checkConnection } = useGithubAuth();
   const {
     mrs,
