@@ -7,6 +7,7 @@ import type {
   MrSortDirection,
   MrSortField,
   PipelineStatus,
+  ProviderId,
 } from "~/types";
 
 const roleFilter = useLocalStorage<MrRole>("devboard:role-filter", "all");
@@ -38,6 +39,7 @@ const mrScopes = useLocalStorage<MrScope[]>("devboard:mr-scopes", [
 ]);
 const fetchTodosEnabled = useLocalStorage<boolean>("devboard:fetch-todos", true);
 const fetchIssuesEnabled = useLocalStorage<boolean>("devboard:fetch-issues", true);
+const provider = useLocalStorage<ProviderId>("devboard:provider", "gitlab");
 
 export function usePreferences() {
   function resetAllFilters() {
@@ -71,6 +73,7 @@ export function usePreferences() {
     mrScopes,
     fetchTodosEnabled,
     fetchIssuesEnabled,
+    provider,
     resetAllFilters,
   };
 }

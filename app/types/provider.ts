@@ -1,4 +1,4 @@
-export type ProviderId = "gitlab";
+export type ProviderId = "gitlab" | "github";
 
 export interface ProviderMeta {
   id: ProviderId;
@@ -10,5 +10,7 @@ export interface ProviderMeta {
   authCliCommand: string;
   authEnvVars: { host: string; token: string };
   authTokenScope: string;
+  authTokenExample: string;
+  authHostExample: string;
   dashboardTodosPath: (host: string) => string;
 }

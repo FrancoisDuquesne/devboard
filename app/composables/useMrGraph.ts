@@ -34,11 +34,13 @@ interface ParsedRef {
 
 /**
  * Parse a dependency reference string.
- *   "!123"              → same-project, iid 123
- *   "group/project!456" → cross-project
+ *   "!123"              → same-project, iid 123 (GitLab)
+ *   "group/project!456" → cross-project (GitLab)
+ *   "#123"              → same-project, iid 123 (GitHub)
+ *   "owner/repo#456"    → cross-project (GitHub)
  */
 function parseDependencyRef(ref: string): ParsedRef | null {
-  const match = ref.match(/^(?:(.+)!)?!?(\d+)$/);
+  const match = ref.match(/^(?:(.+)[!#])?[!#]?(\d+)$/);
   if (!match) return null;
   return {
     projectPath: match[1] || null,

@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import type { ProviderId } from "~/types";
+
 const { status, authLoading: connectionLoading, checkConnection, meta } = useProvider();
-const { autoRefreshInterval, mrScopes, fetchTodosEnabled, fetchIssuesEnabled } =
-  usePreferences();
+const {
+  autoRefreshInterval,
+  mrScopes,
+  fetchTodosEnabled,
+  fetchIssuesEnabled,
+  provider,
+} = usePreferences();
 const { enabled: worktreesEnabled, configured, scanDirs } = useWorktrees();
 
 function toggleScope(scope: "authored" | "assigned" | "reviewer") {
@@ -13,6 +20,12 @@ function toggleScope(scope: "authored" | "assigned" | "reviewer") {
   } else {
     mrScopes.value.push(scope);
   }
+}
+
+function switchProvider(id: ProviderId) {
+  if (id === provider.value) return;
+  provider.value = id;
+  window.location.reload();
 }
 
 const connectionStatus = computed(() => {
@@ -48,7 +61,32 @@ function toggleColorMode() {
 
     <template #content>
       <div class="w-64 space-y-4 p-4 sm:w-72">
-        <!-- Provider -->
+        <!-- Provider selector -->
+        <div class="space-y-3">
+          <p class="text-xs font-medium text-dimmed">Provider</p>
+          <UButtonGroup size="xs" class="w-full">
+            <UButton
+              icon="i-simple-icons-gitlab"
+              label="GitLab"
+              :variant="provider === 'gitlab' ? 'soft' : 'outline'"
+              :color="provider === 'gitlab' ? 'primary' : 'neutral'"
+              class="flex-1"
+              @click="switchProvider('gitlab')"
+            />
+            <UButton
+              icon="i-simple-icons-github"
+              label="GitHub"
+              :variant="provider === 'github' ? 'soft' : 'outline'"
+              :color="provider === 'github' ? 'primary' : 'neutral'"
+              class="flex-1"
+              @click="switchProvider('github')"
+            />
+          </UButtonGroup>
+        </div>
+
+        <USeparator />
+
+        <!-- Connection -->
         <div class="space-y-3">
           <p class="text-xs font-medium text-dimmed">{{ meta.name }}</p>
           <div class="flex items-center gap-1.5 rounded-md bg-muted p-1.5 text-sm">
@@ -89,8 +127,8 @@ function toggleColorMode() {
             </p>
             <pre
               class="rounded-md bg-elevated px-2 py-1 text-xs leading-relaxed"
-            ><code>{{ meta.authEnvVars.host }}=gitlab.example.com
-{{ meta.authEnvVars.token }}=glpat-xxxx</code></pre>
+            ><code>{{ meta.authEnvVars.host }}={{ meta.authHostExample }}
+{{ meta.authEnvVars.token }}={{ meta.authTokenExample }}</code></pre>
             <p class="text-xs text-dimmed">Then restart the dev server.</p>
             <UButton
               icon="i-lucide-refresh-cw"
@@ -109,7 +147,7 @@ function toggleColorMode() {
             <div class="space-y-1.5">
               <div class="flex items-center gap-2 px-2">
                 <UIcon name="i-lucide-git-pull-request" class="size-4 text-dimmed" />
-                <span class="text-sm">Merge requests</span>
+                <span class="text-sm capitalize">{{ meta.mrLabelPlural }}</span>
               </div>
               <div class="flex flex-wrap gap-1 pl-8">
                 <UButton

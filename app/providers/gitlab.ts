@@ -10,5 +10,7 @@ export const gitlabMeta: ProviderMeta = {
   authCliCommand: "glab auth login",
   authEnvVars: { host: "GITLAB_HOST", token: "GITLAB_PRIVATE_TOKEN" },
   authTokenScope: "api",
+  authTokenExample: "glpat-xxxxxxxxxxxxxxxxxxxx",
+  authHostExample: "gitlab.example.com",
   dashboardTodosPath: (host) => `https://${host}/dashboard/todos`,
 };

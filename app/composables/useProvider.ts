@@ -1,7 +1,7 @@
-import { gitlabMeta } from "~/providers";
+import { githubMeta, gitlabMeta } from "~/providers";
 
-// TODO: clear cache when provider switching is implemented
-let cached: ReturnType<typeof createGitLabProvider> | null = null;
+let gitlabCached: ReturnType<typeof createGitLabProvider> | null = null;
+let githubCached: ReturnType<typeof createGitHubProvider> | null = null;
 
 function createGitLabProvider() {
   const { status, loading: authLoading, checkConnection } = useGitlabAuth();
@@ -43,12 +43,9 @@ function createGitLabProvider() {
   const meta = gitlabMeta;
 
   return {
-    // Auth
     status,
     authLoading,
     checkConnection,
-
-    // MRs
     mrs,
     mrsLoading,
     mrsError,
@@ -57,16 +54,12 @@ function createGitLabProvider() {
     fetchMrDetail,
     startMrsAutoRefresh,
     stopMrsAutoRefresh,
-
-    // Issues
     issues,
     issuesLoading,
     fetchIssues,
     fetchIssueDetail,
     startIssuesAutoRefresh,
     stopIssuesAutoRefresh,
-
-    // Todos
     todos,
     mentionMrs,
     todosLoading,
@@ -81,15 +74,102 @@ function createGitLabProvider() {
     markAllAsDone,
     startTodosAutoRefresh,
     stopTodosAutoRefresh,
-
-    // Metadata
     meta,
   };
 }
 
+function createGitHubProvider() {
+  const { status, loading: authLoading, checkConnection } = useGithubAuth();
+  const {
+    mrs,
+    loading: mrsLoading,
+    error: mrsError,
+    projects,
+    fetchMrs,
+    fetchMrDetail,
+    startAutoRefresh: startMrsAutoRefresh,
+    stopAutoRefresh: stopMrsAutoRefresh,
+  } = useGithub({ mrPrefix: githubMeta.mrPrefix });
+  const {
+    issues,
+    loading: issuesLoading,
+    fetchIssues,
+    fetchIssueDetail,
+    startAutoRefresh: startIssuesAutoRefresh,
+    stopAutoRefresh: stopIssuesAutoRefresh,
+  } = useGithubIssues();
+  const {
+    todos,
+    mentionMrs,
+    loading: todosLoading,
+    mentionMrsLoading,
+    error: todosError,
+    panelOpen: todoPanelOpen,
+    mentions,
+    pendingCount,
+    fetchTodos,
+    fetchMentionMrs,
+    markAsDone,
+    markAllAsDone,
+    startAutoRefresh: startTodosAutoRefresh,
+    stopAutoRefresh: stopTodosAutoRefresh,
+  } = useGithubTodos();
+
+  const meta = githubMeta;
+
+  return {
+    status,
+    authLoading,
+    checkConnection,
+    mrs,
+    mrsLoading,
+    mrsError,
+    projects,
+    fetchMrs,
+    fetchMrDetail,
+    startMrsAutoRefresh,
+    stopMrsAutoRefresh,
+    issues,
+    issuesLoading,
+    fetchIssues,
+    fetchIssueDetail,
+    startIssuesAutoRefresh,
+    stopIssuesAutoRefresh,
+    todos,
+    mentionMrs,
+    todosLoading,
+    mentionMrsLoading,
+    todosError,
+    todoPanelOpen,
+    mentions,
+    pendingCount,
+    fetchTodos,
+    fetchMentionMrs,
+    markAsDone,
+    markAllAsDone,
+    startTodosAutoRefresh,
+    stopTodosAutoRefresh,
+    meta,
+  };
+}
+
+/**
+ * Returns the active provider instance.
+ * Reads `provider` imperatively (not reactively) — switching providers
+ * requires a full page reload via `switchProvider()` in SettingsPopover.
+ */
 export function useProvider() {
-  if (!cached) {
-    cached = createGitLabProvider();
+  const { provider } = usePreferences();
+
+  if (provider.value === "github") {
+    if (!githubCached) {
+      githubCached = createGitHubProvider();
+    }
+    return githubCached;
   }
-  return cached;
+
+  if (!gitlabCached) {
+    gitlabCached = createGitLabProvider();
+  }
+  return gitlabCached;
 }
