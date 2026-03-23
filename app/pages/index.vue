@@ -38,17 +38,20 @@ const selectedMr = ref<DevBoardMR | null>(null);
 const drawerOpen = ref(false);
 const selectedIssue = ref<DevBoardIssue | null>(null);
 const issueDrawerOpen = ref(false);
+const { markSeen } = useSeenNodes();
 
 function onSelectMr(mr: DevBoardMR) {
   issueDrawerOpen.value = false;
   selectedMr.value = mr;
   drawerOpen.value = true;
+  markSeen(String(mr.id));
 }
 
 function onSelectIssue(issue: DevBoardIssue) {
   drawerOpen.value = false;
   selectedIssue.value = issue;
   issueDrawerOpen.value = true;
+  markSeen(`issue-${issue.id}`);
 }
 
 watch(searchSelectedMr, (mr) => {

@@ -39,12 +39,18 @@ const statusBorderColor = computed(() => {
 });
 
 const { recentlyUpdatedThreshold } = usePreferences();
+const { isUnseen } = useSeenNodes();
 const isDraft = computed(() => props.data.status === "draft");
 const isCurrentIteration = computed(
   () => !!props.data.milestone && props.data.milestone.state === "active",
 );
-const recentlyUpdated = computed(() =>
-  isRecentlyUpdated(props.data.updatedAt, now.value, recentlyUpdatedThreshold.value),
+const recentlyUpdated = computed(
+  () =>
+    isRecentlyUpdated(
+      props.data.updatedAt,
+      now.value,
+      recentlyUpdatedThreshold.value,
+    ) && isUnseen(String(props.data.id), props.data.updatedAt),
 );
 
 function handleClick(event: MouseEvent) {
@@ -57,11 +63,13 @@ function handleClick(event: MouseEvent) {
 
 <template>
   <div
-    class="cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
+    class="cursor-pointer rounded-lg border border-muted bg-default"
     :class="{
       'opacity-75': isDraft,
-      'iteration-ring': isCurrentIteration,
-      'recently-updated-ring': recentlyUpdated,
+      'shadow-sm': !isCurrentIteration && !recentlyUpdated,
+      'ring-2 ring-primary shadow-lg shadow-primary/40': isCurrentIteration && !recentlyUpdated,
+      'ring-2 ring-info shadow-lg shadow-info/40': recentlyUpdated && !isCurrentIteration,
+      'ring-2 ring-primary shadow-lg shadow-primary/40 outline-2 outline-info outline-offset-4': recentlyUpdated && isCurrentIteration,
     }"
     :style="{
       width: `${NODE_WIDTH}px`,

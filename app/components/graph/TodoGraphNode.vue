@@ -12,9 +12,15 @@ const props = defineProps<{
 const now = useNow();
 const { markAsDone, status, meta } = useProvider();
 const { recentlyUpdatedThreshold } = usePreferences();
+const { isUnseen } = useSeenNodes();
 
-const recentlyUpdated = computed(() =>
-  isRecentlyUpdated(props.data.createdAt, now.value, recentlyUpdatedThreshold.value),
+const recentlyUpdated = computed(
+  () =>
+    isRecentlyUpdated(
+      props.data.createdAt,
+      now.value,
+      recentlyUpdatedThreshold.value,
+    ) && isUnseen(`todo-${props.data.id}`, props.data.createdAt),
 );
 
 const todoUrl = computed(() => {
@@ -47,8 +53,11 @@ function openTodoPage(event: MouseEvent) {
 
 <template>
   <div
-    class="cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
-    :class="{ 'recently-updated-ring': recentlyUpdated }"
+    class="cursor-pointer rounded-lg border border-muted bg-default"
+    :class="{
+      'shadow-sm': !recentlyUpdated,
+      'ring-2 ring-info shadow-lg shadow-info/40': recentlyUpdated,
+    }"
     :style="{ width: `${TODO_NODE_WIDTH}px` }"
     @click.stop="openTodoPage"
   >
