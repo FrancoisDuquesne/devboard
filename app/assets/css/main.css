@@ -30,3 +30,38 @@
 .has-focus .vue-flow__edge {
   opacity: 0.25;
 }
+
+/* Current-iteration ring: animated gradient halo around nodes */
+.iteration-ring {
+  position: relative;
+}
+
+.iteration-ring::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 10px;
+  border: 2px solid var(--color-primary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.iteration-ring::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  pointer-events: none;
+  animation: iteration-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes iteration-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

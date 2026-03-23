@@ -18,6 +18,16 @@ export interface GitLabPipeline {
   updated_at: string;
 }
 
+export interface GitLabMilestone {
+  id: number;
+  iid: number;
+  title: string;
+  state: "active" | "closed";
+  due_date: string | null;
+  start_date: string | null;
+  web_url: string;
+}
+
 export interface GitLabMergeRequest {
   id: number;
   iid: number;
@@ -43,6 +53,7 @@ export interface GitLabMergeRequest {
   updated_at: string;
   merged_at: string | null;
   closed_at: string | null;
+  milestone: GitLabMilestone | null;
   references: {
     full: string;
     relative: string;
@@ -61,6 +72,7 @@ export interface GitLabIssue {
   assignees: GitLabUser[];
   author: GitLabUser;
   project_id: number;
+  milestone: GitLabMilestone | null;
   created_at: string;
   updated_at: string;
   closed_at: string | null;

@@ -36,6 +36,7 @@ export function makeGitHubPr(
     user: makeGitHubUser(),
     requested_reviewers: [],
     labels: [],
+    milestone: null,
     mergeable: true,
     mergeable_state: "clean",
     created_at: "2026-01-01T00:00:00Z",

@@ -1,9 +1,11 @@
 import type {
   DevBoardIssue,
+  DevBoardMilestone,
   DevBoardMR,
   DevBoardTodo,
   GitHubCheckRun,
   GitHubIssue,
+  GitHubMilestone,
   GitHubNotification,
   GitHubPullRequest,
   GitHubReview,
@@ -18,6 +20,17 @@ export function resolvePrStatus(pr: GitHubPullRequest): MrStatus {
   if (pr.state === "closed") return "closed";
   if (pr.draft) return "draft";
   return "open";
+}
+
+function normalizeGitHubMilestone(
+  milestone: GitHubMilestone | null | undefined,
+): DevBoardMilestone | null {
+  if (!milestone) return null;
+  return {
+    title: milestone.title,
+    state: milestone.state === "open" ? "active" : "closed",
+    dueDate: milestone.due_on,
+  };
 }
 
 function parseDependencies(body: string | null): string[] {
@@ -130,6 +143,7 @@ export function normalizePr(
       required: -1,
       approvedByUsernames,
     },
+    milestone: normalizeGitHubMilestone(pr.milestone),
     linkedIssues: parseLinkedIssues(pr.body),
     dependsOnMrs: parseDependencies(pr.body),
     needsRebase: pr.mergeable_state === "dirty" || pr.mergeable_state === "behind",
@@ -215,6 +229,7 @@ export function normalizeGitHubIssue(
     projectId: repoId,
     projectPath: repoFullName,
     labels: issue.labels.map((l) => l.name),
+    milestone: normalizeGitHubMilestone(issue.milestone),
     updatedAt: issue.updated_at,
   };
 }

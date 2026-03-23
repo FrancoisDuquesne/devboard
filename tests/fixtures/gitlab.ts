@@ -39,6 +39,7 @@ export function makeGitLabMr(
     updated_at: "2026-01-02T00:00:00Z",
     merged_at: null,
     closed_at: null,
+    milestone: null,
     references: { full: "org/repo!10", relative: "!10", short: "!10" },
     ...overrides,
   };

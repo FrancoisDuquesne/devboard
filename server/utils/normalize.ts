@@ -1,11 +1,13 @@
 import type {
   DevBoardIssue,
+  DevBoardMilestone,
   DevBoardMR,
   DevBoardTodo,
   GitLabApprovals,
   GitLabDiscussion,
   GitLabIssue,
   GitLabMergeRequest,
+  GitLabMilestone,
   GitLabTodo,
   MrStatus,
   PipelineStatus,
@@ -23,6 +25,17 @@ function parseDependencies(description: string | null): string[] {
   if (!description || description.length > 100_000) return [];
   const pattern = /[Dd]epends\s+on\s+(!?\d+|[\w.\-/]{1,200}!(\d+))/g;
   return Array.from(description.matchAll(pattern), (m) => m[1]);
+}
+
+function normalizeGitLabMilestone(
+  milestone: GitLabMilestone | null | undefined,
+): DevBoardMilestone | null {
+  if (!milestone) return null;
+  return {
+    title: milestone.title,
+    state: milestone.state,
+    dueDate: milestone.due_date,
+  };
 }
 
 function parseLinkedIssues(description: string | null): DevBoardIssue[] {
@@ -94,6 +107,7 @@ export function normalizeMr(
       required: approvals?.approvals_required ?? 0,
       approvedByUsernames: approvals?.approved_by?.map((a) => a.user.username) ?? [],
     },
+    milestone: normalizeGitLabMilestone(mr.milestone),
     linkedIssues: parseLinkedIssues(mr.description),
     dependsOnMrs: parseDependencies(mr.description),
     needsRebase:
@@ -147,6 +161,7 @@ export function normalizeIssue(
     projectId: issue.project_id,
     projectPath,
     labels: issue.labels,
+    milestone: normalizeGitLabMilestone(issue.milestone),
     updatedAt: issue.updated_at,
   };
 }

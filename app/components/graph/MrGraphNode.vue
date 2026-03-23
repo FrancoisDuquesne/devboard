@@ -39,6 +39,9 @@ const statusBorderColor = computed(() => {
 });
 
 const isDraft = computed(() => props.data.status === "draft");
+const isCurrentIteration = computed(
+  () => !!props.data.milestone && props.data.milestone.state === "active",
+);
 
 function handleClick(event: MouseEvent) {
   if (event.ctrlKey || event.metaKey) {
@@ -51,7 +54,7 @@ function handleClick(event: MouseEvent) {
 <template>
   <div
     class="cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
-    :class="{ 'opacity-75': isDraft }"
+    :class="{ 'opacity-75': isDraft, 'iteration-ring': isCurrentIteration }"
     :style="{
       width: `${NODE_WIDTH}px`,
       borderLeftWidth: statusBorderColor ? '4px' : undefined,
@@ -158,6 +161,18 @@ function handleClick(event: MouseEvent) {
           icon="i-lucide-git-branch"
           label="Rebase"
         />
+        <UTooltip
+          v-if="isCurrentIteration"
+          :text="`Milestone: ${data.milestone!.title}`"
+        >
+          <UBadge
+            color="primary"
+            variant="subtle"
+            size="sm"
+            icon="i-lucide-flag"
+            :label="data.milestone!.title"
+          />
+        </UTooltip>
       </div>
       <div v-if="data.labels.length > 0" class="flex flex-wrap items-center gap-1">
         <ScopedLabel

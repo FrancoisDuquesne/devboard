@@ -11,6 +11,12 @@ export type PipelineStatus =
   | "manual"
   | null;
 
+export interface DevBoardMilestone {
+  title: string;
+  state: "active" | "closed";
+  dueDate: string | null;
+}
+
 export interface DevBoardIssue {
   id: number;
   iid: number;
@@ -21,6 +27,7 @@ export interface DevBoardIssue {
   projectId: number;
   projectPath?: string;
   labels?: string[];
+  milestone?: DevBoardMilestone | null;
   updatedAt?: string;
 }
 
@@ -60,6 +67,7 @@ export interface DevBoardMR {
   linkedIssues: DevBoardIssue[];
   dependsOnMrs: string[];
   needsRebase: boolean;
+  milestone: DevBoardMilestone | null;
   createdAt: string;
   updatedAt: string;
 }

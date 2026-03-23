@@ -1,5 +1,11 @@
-import type { DevBoardMR } from "~/types";
+import type { DevBoardMR, DevBoardMilestone } from "~/types";
 import { DEMO_USERS, demoUrl } from "./constants";
+
+const CURRENT_SPRINT: DevBoardMilestone = {
+  title: "Sprint 12",
+  state: "active",
+  dueDate: "2026-03-27",
+};
 
 const P = { platform: "acme/platform", frontend: "acme/frontend", infra: "acme/infra" };
 const U = DEMO_USERS;
@@ -43,6 +49,7 @@ export const demoMrs: DevBoardMR[] = [
       },
     ],
     dependsOnMrs: [],
+    milestone: CURRENT_SPRINT,
     needsRebase: false,
     createdAt: "2026-03-10T09:00:00.000Z",
     updatedAt: "2026-03-16T14:30:00.000Z",
@@ -82,6 +89,7 @@ export const demoMrs: DevBoardMR[] = [
       },
     ],
     dependsOnMrs: ["acme/infra!14"],
+    milestone: CURRENT_SPRINT,
     needsRebase: false,
     createdAt: "2026-03-08T11:00:00.000Z",
     updatedAt: "2026-03-17T08:15:00.000Z",
@@ -121,6 +129,7 @@ export const demoMrs: DevBoardMR[] = [
       },
     ],
     dependsOnMrs: ["acme/platform!42"],
+    milestone: CURRENT_SPRINT,
     needsRebase: false,
     createdAt: "2026-03-12T14:00:00.000Z",
     updatedAt: "2026-03-17T07:45:00.000Z",
@@ -148,6 +157,7 @@ export const demoMrs: DevBoardMR[] = [
     approvals: { approved: 0, required: 1, approvedByUsernames: [] },
     linkedIssues: [],
     dependsOnMrs: ["!42"],
+    milestone: null,
     needsRebase: false,
     createdAt: "2026-03-14T16:00:00.000Z",
     updatedAt: "2026-03-16T10:00:00.000Z",
@@ -178,6 +188,7 @@ export const demoMrs: DevBoardMR[] = [
     },
     linkedIssues: [],
     dependsOnMrs: [],
+    milestone: CURRENT_SPRINT,
     needsRebase: false,
     createdAt: "2026-03-05T08:30:00.000Z",
     updatedAt: "2026-03-15T17:00:00.000Z",
@@ -205,6 +216,7 @@ export const demoMrs: DevBoardMR[] = [
     approvals: { approved: 0, required: 1, approvedByUsernames: [] },
     linkedIssues: [],
     dependsOnMrs: [],
+    milestone: null,
     needsRebase: false,
     createdAt: "2026-03-15T13:00:00.000Z",
     updatedAt: "2026-03-17T06:00:00.000Z",
@@ -231,6 +243,7 @@ export const demoMrs: DevBoardMR[] = [
     approvals: { approved: 0, required: 1, approvedByUsernames: [] },
     linkedIssues: [],
     dependsOnMrs: [],
+    milestone: CURRENT_SPRINT,
     needsRebase: false,
     createdAt: "2026-03-13T10:00:00.000Z",
     updatedAt: "2026-03-16T22:00:00.000Z",
@@ -258,6 +271,7 @@ export const demoMrs: DevBoardMR[] = [
     approvals: { approved: 1, required: 1, approvedByUsernames: ["alex.dev"] },
     linkedIssues: [],
     dependsOnMrs: [],
+    milestone: null,
     needsRebase: false,
     createdAt: "2026-03-06T15:00:00.000Z",
     updatedAt: "2026-03-15T11:00:00.000Z",

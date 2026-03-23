@@ -12,6 +12,15 @@ export interface GitHubLabel {
   color: string;
 }
 
+export interface GitHubMilestone {
+  id: number;
+  number: number;
+  title: string;
+  state: "open" | "closed";
+  due_on: string | null;
+  html_url: string;
+}
+
 export interface GitHubPullRequest {
   id: number;
   number: number;
@@ -36,6 +45,7 @@ export interface GitHubPullRequest {
   labels: GitHubLabel[];
   mergeable: boolean | null;
   mergeable_state: string;
+  milestone: GitHubMilestone | null;
   created_at: string;
   updated_at: string;
 }
@@ -87,6 +97,7 @@ export interface GitHubIssue {
   repository?: { id: number; full_name: string };
   repository_url?: string;
   pull_request?: { url: string };
+  milestone: GitHubMilestone | null;
   created_at: string;
   updated_at: string;
   closed_at: string | null;
