@@ -8,15 +8,24 @@ const props = defineProps<{
   data: DevBoardIssue;
 }>();
 
+const now = useNow();
+const { recentlyUpdatedThreshold } = usePreferences();
+
 const isCurrentIteration = computed(
   () => !!props.data.milestone && props.data.milestone.state === "active",
+);
+const recentlyUpdated = computed(() =>
+  isRecentlyUpdated(props.data.updatedAt, now.value, recentlyUpdatedThreshold.value),
 );
 </script>
 
 <template>
   <div
     :style="{ width: `${ISSUE_NODE_WIDTH}px` }"
-    :class="{ 'iteration-ring': isCurrentIteration }"
+    :class="{
+      'iteration-ring': isCurrentIteration,
+      'recently-updated-ring': recentlyUpdated,
+    }"
   >
     <Handle type="target" :position="Position.Top" class="invisible!" />
     <IssueItem :issue="data" :project-initials="getProjectInitials(data.projectPath)" />

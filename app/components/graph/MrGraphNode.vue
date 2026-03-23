@@ -38,9 +38,13 @@ const statusBorderColor = computed(() => {
   return "var(--color-primary)";
 });
 
+const { recentlyUpdatedThreshold } = usePreferences();
 const isDraft = computed(() => props.data.status === "draft");
 const isCurrentIteration = computed(
   () => !!props.data.milestone && props.data.milestone.state === "active",
+);
+const recentlyUpdated = computed(() =>
+  isRecentlyUpdated(props.data.updatedAt, now.value, recentlyUpdatedThreshold.value),
 );
 
 function handleClick(event: MouseEvent) {
@@ -54,7 +58,11 @@ function handleClick(event: MouseEvent) {
 <template>
   <div
     class="cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
-    :class="{ 'opacity-75': isDraft, 'iteration-ring': isCurrentIteration }"
+    :class="{
+      'opacity-75': isDraft,
+      'iteration-ring': isCurrentIteration,
+      'recently-updated-ring': recentlyUpdated,
+    }"
     :style="{
       width: `${NODE_WIDTH}px`,
       borderLeftWidth: statusBorderColor ? '4px' : undefined,

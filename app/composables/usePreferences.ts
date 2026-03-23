@@ -46,6 +46,10 @@ const issueScopes = useLocalStorage<IssueScope[]>("devboard:issue-scopes", [
   "created",
 ]);
 const provider = useLocalStorage<ProviderId>("devboard:provider", "gitlab");
+const recentlyUpdatedThreshold = useLocalStorage<number>(
+  "devboard:recently-updated-hours",
+  4,
+);
 
 export function usePreferences() {
   function resetAllFilters() {
@@ -82,6 +86,7 @@ export function usePreferences() {
     fetchIssuesEnabled,
     issueScopes,
     provider,
+    recentlyUpdatedThreshold,
     resetAllFilters,
   };
 }

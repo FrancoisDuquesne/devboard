@@ -668,6 +668,12 @@ const isFiltered = computed(
                     />
                     Current iteration
                   </span>
+                  <span class="flex items-center gap-1">
+                    <span
+                      class="inline-block size-3 rounded border-2 border-info shadow-sm shadow-info/40"
+                    />
+                    Recently updated
+                  </span>
                 </template>
                 <UTooltip
                   v-if="!hasEdges && !isFiltered"

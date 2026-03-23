@@ -11,6 +11,11 @@ const props = defineProps<{
 
 const now = useNow();
 const { markAsDone, status, meta } = useProvider();
+const { recentlyUpdatedThreshold } = usePreferences();
+
+const recentlyUpdated = computed(() =>
+  isRecentlyUpdated(props.data.createdAt, now.value, recentlyUpdatedThreshold.value),
+);
 
 const todoUrl = computed(() => {
   if (!status.value?.host) return null;
@@ -43,6 +48,7 @@ function openTodoPage(event: MouseEvent) {
 <template>
   <div
     class="cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
+    :class="{ 'recently-updated-ring': recentlyUpdated }"
     :style="{ width: `${TODO_NODE_WIDTH}px` }"
     @click.stop="openTodoPage"
   >

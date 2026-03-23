@@ -1,3 +1,14 @@
+/** Check if a date is within `thresholdHours` of `now`. */
+export function isRecentlyUpdated(
+  dateString: string | undefined,
+  now: number,
+  thresholdHours: number,
+): boolean {
+  if (!dateString) return false;
+  const then = new Date(dateString).getTime();
+  return now - then < thresholdHours * 3_600_000;
+}
+
 export function timeAgo(dateString: string, now?: number): string {
   const current = now ?? Date.now();
   const then = new Date(dateString).getTime();

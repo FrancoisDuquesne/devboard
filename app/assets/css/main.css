@@ -65,3 +65,55 @@
     opacity: 0.7;
   }
 }
+
+/* Recently-updated ring: warning-colored halo around nodes */
+.recently-updated-ring {
+  position: relative;
+}
+
+.recently-updated-ring::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 10px;
+  border: 2px solid var(--color-info);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.recently-updated-ring::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--color-info) 40%, transparent);
+  pointer-events: none;
+  animation: recent-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes recent-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* When both rings are present, iteration ring takes precedence on ::before/::after,
+   so we use an outline for the recently-updated indicator instead */
+.iteration-ring.recently-updated-ring::before {
+  border-color: var(--color-primary);
+}
+
+.iteration-ring.recently-updated-ring::after {
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  animation: iteration-pulse 2.5s ease-in-out infinite;
+}
+
+.iteration-ring.recently-updated-ring {
+  outline: 2px solid var(--color-info);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
