@@ -659,7 +659,10 @@ const isFiltered = computed(
                     <span class="inline-block h-3 w-1 rounded-full bg-info" /> Mentioned
                   </span>
                   <span class="flex items-center gap-1">
-                    <span class="inline-block h-3 w-1 rounded-full bg-dimmed" /> Draft
+                    <span
+                      class="inline-block h-3 w-1 rounded-full bg-neutral-400 dark:bg-neutral-500"
+                    />
+                    Draft
                   </span>
                   <span class="my-1 w-full border-b border-accented" />
                   <span class="flex items-center gap-1">
@@ -669,9 +672,7 @@ const isFiltered = computed(
                     Current iteration
                   </span>
                   <span class="flex items-center gap-1">
-                    <span
-                      class="inline-block size-3 rounded border-2 border-info shadow-sm shadow-info/40"
-                    />
+                    <span class="inline-flex size-3 rounded-full bg-info" />
                     Recently updated
                   </span>
                 </template>
@@ -690,9 +691,10 @@ const isFiltered = computed(
           <!-- Header (always at the bottom, never moves) -->
           <UButton
             label="Legend"
-            :trailing-icon="legendCollapsed ? 'i-lucide-chevrons-up-down' : 'i-lucide-chevrons-down-up'"
-            variant="link"
+            trailing-icon="i-lucide-pin"
+            :ui="{ trailingIcon: legendCollapsed ? 'text-dimmed' : 'text-primary' }"
             color="neutral"
+            variant="link"
             size="sm"
             block
             @click="legendCollapsed = !legendCollapsed"
