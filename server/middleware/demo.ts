@@ -19,6 +19,13 @@ export default defineEventHandler((event) => {
 
   const pathname = getRequestURL(event).pathname;
 
+  // GET/PUT /api/annotations — return empty in demo mode
+  if (pathname === "/api/annotations") {
+    const method = getMethod(event);
+    if (method === "PUT") return { success: true };
+    return { stickyNotes: [], drawings: [] };
+  }
+
   // GET /api/worktrees
   if (pathname === "/api/worktrees") {
     return demoWorktrees;

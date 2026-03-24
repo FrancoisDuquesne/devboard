@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/FrancoisDuquesne/devboard/actions/workflows/ci.yml/badge.svg)](https://github.com/FrancoisDuquesne/devboard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 
 **[Live Demo](https://francoisduquesne.github.io/devboard/)** — try it now, no setup needed
 
@@ -58,7 +58,7 @@ See your local git worktrees alongside MRs. DevBoard scans configured directorie
 
 ### Annotations & drawing tools
 
-Add sticky notes and freehand drawings directly on the board. Notes support markdown rendering, resizing, and color-coded backgrounds. Drawing tools include freehand, arrows, and rectangles with color and stroke width options. An eraser tool lets you click any drawing to delete it. Everything persists locally.
+Add sticky notes and freehand drawings directly on the board. Notes support markdown rendering, resizing, and color-coded backgrounds. Drawing tools include freehand, arrows, and rectangles with color and stroke width options. An eraser tool lets you click any drawing to delete it. Annotations are persisted server-side in `~/.devboard/annotations.json`, so they are shared across ports and sessions.
 
 <p align="center">
   <img src="docs/screenshots/annotations.png" alt="Annotation toolbar with sticky note" width="100%" style="border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);" />
@@ -106,6 +106,9 @@ GITHUB_PRIVATE_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # Optional: enable worktree tracking
 WORKTREE_SCAN_DIRS=/home/user/repos,/home/user/projects
+
+# Optional: custom annotation storage directory (default: ~/.devboard)
+DEVBOARD_DATA_DIR=/path/to/custom/dir
 ```
 
 Or, if you have `glab` / `gh` CLI configured, no `.env` is needed — DevBoard reads your token from CLI config automatically.
@@ -214,7 +217,7 @@ app/                          # Frontend (Vue 3 + Composition API)
 │   └── *Badge.vue            # Status, pipeline, approval, threads badges
 ├── composables/              # Reactive state and data fetching
 │   ├── useProvider.ts        # Provider factory — returns correct composables
-│   └── useAnnotations.ts     # Sticky notes + drawings state (localStorage)
+│   └── useAnnotations.ts     # Sticky notes + drawings state (server-persisted)
 └── types/                    # TypeScript definitions
 
 shared/                       # Code shared between app and server
@@ -223,6 +226,7 @@ shared/                       # Code shared between app and server
 server/                       # Nitro API proxy
 ├── api/gitlab/               # 8 API routes (mrs, issues, todos, mention-mrs, status)
 ├── api/github/               # 8 API routes (same pattern as GitLab)
+├── api/annotations.*         # Annotation persistence (GET/PUT → ~/.devboard/annotations.json)
 ├── api/worktrees/            # Worktree scanning endpoint
 ├── middleware/demo.ts        # Demo mode interceptor (dev server)
 └── utils/                    # Provider clients, auth, normalization, cache, worktree scanner

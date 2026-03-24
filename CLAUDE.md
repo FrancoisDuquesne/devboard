@@ -99,7 +99,7 @@ app/
 │   ├── usePreferences.ts          # LocalStorage-backed user preferences
 │   ├── useMrGraph.ts              # Graph layout computation (Dagre)
 │   ├── useActionStatus.ts         # Derive required action per MR
-│   ├── useAnnotations.ts          # Sticky notes + drawings state (localStorage)
+│   ├── useAnnotations.ts          # Sticky notes + drawings state (server-persisted)
 │   ├── useSearch.ts               # Command palette search logic
 │   ├── useNotifications.ts        # Toast notifications for data changes
 │   ├── useWorktrees.ts            # Local worktree tracking
@@ -149,6 +149,8 @@ server/
 │   │   ├── todos/[id].post.ts
 │   │   ├── mention-mrs.get.ts
 │   │   └── status.get.ts
+│   ├── annotations.get.ts         # GET /api/annotations — read annotations
+│   ├── annotations.put.ts         # PUT /api/annotations — write annotations
 │   └── worktrees/
 │       └── index.get.ts           # GET /api/worktrees — scan local worktrees
 ├── middleware/
@@ -160,6 +162,7 @@ server/
     ├── github-client.ts           # GitHub API client
     ├── normalize.ts               # GitLab response normalization
     ├── github-normalize.ts        # GitHub response normalization
+    ├── annotations.ts             # Annotation file path resolution
     ├── cache.ts                   # Shared TTL cache
     ├── worktree.ts                # Worktree scanner
     └── log.ts                     # Structured logging utility
@@ -214,5 +217,5 @@ Test stack: **Vitest** for unit tests, **Playwright** for E2E, **happy-dom** for
 - **Auto-refresh**: configurable interval, with toast notifications on changes
 - **Node focus**: clicking a node opens the detail drawer and highlights it — selected node gets a primary-colored glow via CSS (`has-focus` class on VueFlow wrapper), other nodes and edges dim to ~35% opacity; selection synced via `focusedNodeId` prop from `index.vue` to `MrDependencyGraph`
 - **Keyboard shortcuts**: `r` to refresh, `Escape` to close drawer, `v`/`n`/`p`/`a`/`e` for annotation tools; all single-letter shortcuts guarded by `canUseShortcut()` which checks for focused inputs
-- **Annotations**: sticky notes are Vue Flow custom nodes (drag/zoom for free), drawings are an SVG overlay outside VueFlow at `z-[5]`; toolbar at `z-10` above the drawing layer; `drawingsVisible` controls SVG visibility only, not sticky notes
+- **Annotations**: sticky notes are Vue Flow custom nodes (drag/zoom for free), drawings are an SVG overlay outside VueFlow at `z-[5]`; toolbar at `z-10` above the drawing layer; `drawingsVisible` controls SVG visibility only, not sticky notes; data is persisted server-side in `~/.devboard/annotations.json` (configurable via `DEVBOARD_DATA_DIR` env var) so it is shared across ports and sessions
 - **Demo mode**: `npm run demo` serves fixtures via `server/middleware/demo.ts` (dev) or `app/plugins/demo-fetch.client.ts` (static build) — no provider connection needed

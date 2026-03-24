@@ -29,6 +29,7 @@ export default defineNuxtPlugin(async () => {
   ]);
 
   function matchDemoRoute(pathname: string): unknown | undefined {
+    if (pathname === "/api/annotations") return { stickyNotes: [], drawings: [] };
     if (pathname === "/api/worktrees") return demoWorktrees;
 
     if (!pathname.startsWith("/api/gitlab/") && !pathname.startsWith("/api/github/"))
