@@ -6,6 +6,7 @@ import type {
   GitLabApprovals,
   GitLabDiscussion,
   GitLabIssue,
+  GitLabIteration,
   GitLabMergeRequest,
   GitLabMilestone,
   GitLabTodo,
@@ -35,6 +36,17 @@ function normalizeGitLabMilestone(
     title: milestone.title,
     state: milestone.state,
     dueDate: milestone.due_date,
+  };
+}
+
+function normalizeGitLabIteration(
+  iteration: GitLabIteration | null | undefined,
+): DevBoardMilestone | null {
+  if (!iteration) return null;
+  return {
+    title: iteration.title,
+    state: iteration.state === "current" ? "active" : "closed",
+    dueDate: iteration.due_date,
   };
 }
 
@@ -108,6 +120,7 @@ export function normalizeMr(
       approvedByUsernames: approvals?.approved_by?.map((a) => a.user.username) ?? [],
     },
     milestone: normalizeGitLabMilestone(mr.milestone),
+    iteration: normalizeGitLabIteration(mr.iteration),
     linkedIssues: parseLinkedIssues(mr.description),
     dependsOnMrs: parseDependencies(mr.description),
     needsRebase:
@@ -162,6 +175,7 @@ export function normalizeIssue(
     projectPath,
     labels: issue.labels,
     milestone: normalizeGitLabMilestone(issue.milestone),
+    iteration: normalizeGitLabIteration(issue.iteration),
     updatedAt: issue.updated_at,
   };
 }

@@ -144,6 +144,7 @@ export function normalizePr(
       approvedByUsernames,
     },
     milestone: normalizeGitHubMilestone(pr.milestone),
+    iteration: null,
     linkedIssues: parseLinkedIssues(pr.body),
     dependsOnMrs: parseDependencies(pr.body),
     needsRebase: pr.mergeable_state === "dirty" || pr.mergeable_state === "behind",
@@ -230,6 +231,7 @@ export function normalizeGitHubIssue(
     projectPath: repoFullName,
     labels: issue.labels.map((l) => l.name),
     milestone: normalizeGitHubMilestone(issue.milestone),
+    iteration: null,
     updatedAt: issue.updated_at,
   };
 }

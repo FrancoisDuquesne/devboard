@@ -53,14 +53,16 @@ function openTodoPage(event: MouseEvent) {
 
 <template>
   <div
-    class="cursor-pointer rounded-lg border border-muted bg-default"
-    :class="{
-      'shadow-sm': !recentlyUpdated,
-      'ring-2 ring-info shadow-lg shadow-info/40': recentlyUpdated,
-    }"
+    class="relative cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
     :style="{ width: `${TODO_NODE_WIDTH}px` }"
     @click.stop="openTodoPage"
   >
+    <span v-if="recentlyUpdated" class="absolute -right-2 -top-2 z-10 flex size-4">
+      <span
+        class="absolute inline-flex size-full animate-ping rounded-full bg-info opacity-75"
+      />
+      <span class="relative inline-flex size-4 rounded-full bg-info" />
+    </span>
     <Handle type="target" :position="Position.Top" class="invisible!" />
     <div class="flex flex-col gap-1 p-3">
       <div class="flex items-center gap-1.5">

@@ -1,5 +1,4 @@
 import { getGitHubApiBaseUrl, getGitHubToken } from "./github-auth";
-import { mapWithConcurrency } from "./gitlab-client";
 
 const REQUEST_TIMEOUT_MS = 15_000;
 const MAX_PAGES = 50;
@@ -9,8 +8,6 @@ interface FetchOptions {
   params?: Record<string, string | number | boolean>;
   method?: string;
 }
-
-export { mapWithConcurrency };
 
 export async function githubFetch<T>(
   path: string,

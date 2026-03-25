@@ -41,9 +41,6 @@ const statusBorderColor = computed(() => {
 const { recentlyUpdatedThreshold } = usePreferences();
 const { isUnseen } = useSeenNodes();
 const isDraft = computed(() => props.data.status === "draft");
-const isCurrentIteration = computed(
-  () => !!props.data.milestone && props.data.milestone.state === "active",
-);
 const recentlyUpdated = computed(
   () =>
     isRecentlyUpdated(
@@ -63,13 +60,9 @@ function handleClick(event: MouseEvent) {
 
 <template>
   <div
-    class="cursor-pointer rounded-lg border border-muted bg-default"
+    class="relative cursor-pointer rounded-lg border border-muted bg-default shadow-sm"
     :class="{
       'opacity-75': isDraft,
-      'shadow-sm': !isCurrentIteration && !recentlyUpdated,
-      'ring-2 ring-primary shadow-lg shadow-primary/40': isCurrentIteration && !recentlyUpdated,
-      'ring-2 ring-info shadow-lg shadow-info/40': recentlyUpdated && !isCurrentIteration,
-      'ring-2 ring-primary shadow-lg shadow-primary/40 outline-2 outline-info outline-offset-4': recentlyUpdated && isCurrentIteration,
     }"
     :style="{
       width: `${NODE_WIDTH}px`,
@@ -78,6 +71,12 @@ function handleClick(event: MouseEvent) {
     }"
     @click="handleClick"
   >
+    <span v-if="recentlyUpdated" class="absolute -right-2 -top-2 z-10 flex size-4">
+      <span
+        class="absolute inline-flex size-full animate-ping rounded-full bg-info opacity-75"
+      />
+      <span class="relative inline-flex size-4 rounded-full bg-info" />
+    </span>
     <Handle type="target" :position="Position.Top" class="invisible!" />
     <div class="flex flex-col gap-1 p-3">
       <div class="flex items-center justify-between gap-1">
@@ -176,32 +175,6 @@ function handleClick(event: MouseEvent) {
           size="sm"
           icon="i-lucide-git-branch"
           label="Rebase"
-        />
-        <UTooltip
-          v-if="isCurrentIteration"
-          :text="`Milestone: ${data.milestone!.title}`"
-        >
-          <UBadge
-            color="primary"
-            variant="subtle"
-            size="sm"
-            icon="i-lucide-flag"
-            :label="data.milestone!.title"
-          />
-        </UTooltip>
-      </div>
-      <div v-if="data.labels.length > 0" class="flex flex-wrap items-center gap-1">
-        <ScopedLabel
-          v-for="label in data.labels.slice(0, 2)"
-          :key="label"
-          :label="label"
-        />
-        <UBadge
-          v-if="data.labels.length > 2"
-          color="neutral"
-          variant="soft"
-          size="sm"
-          :label="`+${data.labels.length - 2}`"
         />
       </div>
       <div v-if="data.linkedIssues.length > 0" class="mt-0.5 flex flex-col gap-1">

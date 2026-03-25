@@ -28,6 +28,7 @@ export interface DevBoardIssue {
   projectPath?: string;
   labels?: string[];
   milestone?: DevBoardMilestone | null;
+  iteration?: DevBoardMilestone | null;
   updatedAt?: string;
 }
 
@@ -68,6 +69,7 @@ export interface DevBoardMR {
   dependsOnMrs: string[];
   needsRebase: boolean;
   milestone: DevBoardMilestone | null;
+  iteration: DevBoardMilestone | null;
   createdAt: string;
   updatedAt: string;
 }

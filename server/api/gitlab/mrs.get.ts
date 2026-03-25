@@ -6,11 +6,8 @@ import type {
   GitLabProject,
 } from "~~/app/types";
 import { TtlCache } from "~~/server/utils/cache";
-import {
-  gitlabFetch,
-  gitlabFetchAllPages,
-  mapWithConcurrency,
-} from "~~/server/utils/gitlab-client";
+import { mapWithConcurrency } from "~~/server/utils/concurrency";
+import { gitlabFetch, gitlabFetchAllPages } from "~~/server/utils/gitlab-client";
 import { errorMessage } from "~~/server/utils/log";
 import { normalizeMr } from "~~/server/utils/normalize";
 

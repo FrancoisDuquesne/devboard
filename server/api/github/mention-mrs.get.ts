@@ -5,11 +5,8 @@ import type {
   GitHubPullRequest,
   GitHubReview,
 } from "~~/app/types";
-import {
-  githubFetch,
-  githubFetchAllPages,
-  mapWithConcurrency,
-} from "~~/server/utils/github-client";
+import { mapWithConcurrency } from "~~/server/utils/concurrency";
+import { githubFetch, githubFetchAllPages } from "~~/server/utils/github-client";
 import { normalizePr } from "~~/server/utils/github-normalize";
 import { errorMessage } from "~~/server/utils/log";
 

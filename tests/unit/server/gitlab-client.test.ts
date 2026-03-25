@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapWithConcurrency } from "~~/server/utils/gitlab-client";
+import { mapWithConcurrency } from "~~/server/utils/concurrency";
 
 describe("mapWithConcurrency", () => {
   it("resolves all items successfully", async () => {

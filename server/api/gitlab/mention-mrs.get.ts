@@ -5,11 +5,8 @@ import type {
   GitLabMergeRequest,
   GitLabTodo,
 } from "~~/app/types";
-import {
-  gitlabFetch,
-  gitlabFetchAllPages,
-  mapWithConcurrency,
-} from "~~/server/utils/gitlab-client";
+import { mapWithConcurrency } from "~~/server/utils/concurrency";
+import { gitlabFetch, gitlabFetchAllPages } from "~~/server/utils/gitlab-client";
 import { errorMessage } from "~~/server/utils/log";
 import { normalizeMr } from "~~/server/utils/normalize";
 

@@ -14,6 +14,16 @@ const { fetchMrDetail, status: authStatus, meta } = useProvider();
 const { enabled: worktreeEnabled, worktreeByBranch } = useWorktrees();
 const now = useNow();
 const { copy } = useClipboard();
+const { recentlyUpdatedThreshold } = usePreferences();
+const { isUnseen } = useSeenNodes();
+
+const recentlyUpdatedUnseen = computed(() => {
+  if (!props.mr) return false;
+  return (
+    isRecentlyUpdated(props.mr.updatedAt, now.value, recentlyUpdatedThreshold.value) &&
+    isUnseen(String(props.mr.id), props.mr.updatedAt)
+  );
+});
 
 const detail = ref<DevBoardMRDetail | null>(null);
 const loadingDetail = ref(false);
@@ -93,6 +103,14 @@ function openInProvider() {
       </div>
 
       <div v-else-if="detail" class="flex flex-col gap-5 p-4">
+        <div
+          v-if="recentlyUpdatedUnseen"
+          class="flex items-center gap-2 rounded-md bg-info/10 px-3 py-2 text-sm text-info"
+        >
+          <UIcon name="i-lucide-activity" class="size-4 shrink-0" />
+          <span>Updated {{ timeAgo(detail.updatedAt, now) }}</span>
+        </div>
+
         <div class="flex items-start justify-between gap-2">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1">
@@ -222,6 +240,19 @@ function openInProvider() {
           <div>
             <p class="text-dimmed text-xs">Updated</p>
             <p>{{ timeAgo(detail.updatedAt, now) }}</p>
+          </div>
+          <div v-if="detail.milestone">
+            <p class="text-dimmed text-xs">Milestone</p>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <UIcon name="i-lucide-milestone" class="size-3.5 shrink-0 text-dimmed" />
+              <span>{{ detail.milestone.title }}</span>
+              <UBadge
+                :color="detail.milestone.state === 'active' ? 'success' : 'neutral'"
+                variant="subtle"
+                size="sm"
+                :label="detail.milestone.state"
+              />
+            </div>
           </div>
         </div>
 

@@ -10,10 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Server-side annotation persistence** — sticky notes and drawings are now stored in `~/.devboard/annotations.json` instead of localStorage, making them accessible across ports and sessions. Configurable via `DEVBOARD_DATA_DIR` env var.
+- **Iteration support** — GitLab iterations are normalized and used to highlight issue nodes in the current iteration
+- **Milestone in MR detail drawer** — milestone title and state shown in the sidepanel metadata grid
+- **Recently-updated indicator** — pulsing blue dot on graph nodes that changed since last viewed
+- **Recently-updated banner** — info banner in MR and issue detail drawers for unseen updates
+- **Concurrency utility** — `mapWithConcurrency` extracted to shared `server/utils/concurrency.ts`
 
 ### Changed
 
 - Legend panel toggle uses a pin icon with color change instead of expand/collapse chevrons
+- MR graph nodes no longer show iteration/milestone highlight ring or labels — milestone info moved to detail sidepanel, labels remain in detail sidepanel only
+- Iteration highlight ring restricted to issue nodes only (MRs don't have iterations in GitLab)
 
 ## [1.1.0] — 2026-03-20
 

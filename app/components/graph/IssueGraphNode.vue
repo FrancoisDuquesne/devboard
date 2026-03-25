@@ -13,7 +13,9 @@ const { recentlyUpdatedThreshold } = usePreferences();
 const { isUnseen } = useSeenNodes();
 
 const isCurrentIteration = computed(
-  () => !!props.data.milestone && props.data.milestone.state === "active",
+  () =>
+    props.data.iteration?.state === "active" ||
+    (!!props.data.milestone && props.data.milestone.state === "active"),
 );
 const recentlyUpdated = computed(
   () =>
@@ -27,14 +29,18 @@ const recentlyUpdated = computed(
 
 <template>
   <div
-    class="rounded-md"
+    class="relative rounded-md"
     :style="{ width: `${ISSUE_NODE_WIDTH}px` }"
     :class="{
-      'ring-2 ring-primary shadow-lg shadow-primary/40': isCurrentIteration && !recentlyUpdated,
-      'ring-2 ring-info shadow-lg shadow-info/40': recentlyUpdated && !isCurrentIteration,
-      'ring-2 ring-primary shadow-lg shadow-primary/40 outline-2 outline-info outline-offset-4': recentlyUpdated && isCurrentIteration,
+      'ring-2 ring-primary shadow-lg shadow-primary/40': isCurrentIteration,
     }"
   >
+    <span v-if="recentlyUpdated" class="absolute -right-2 -top-2 z-10 flex size-4">
+      <span
+        class="absolute inline-flex size-full animate-ping rounded-full bg-info opacity-75"
+      />
+      <span class="relative inline-flex size-4 rounded-full bg-info" />
+    </span>
     <Handle type="target" :position="Position.Top" class="invisible!" />
     <IssueItem :issue="data" :project-initials="getProjectInitials(data.projectPath)" />
     <Handle type="source" :position="Position.Bottom" class="invisible!" />
