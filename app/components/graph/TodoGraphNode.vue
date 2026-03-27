@@ -40,7 +40,7 @@ const targetIssue = computed<DevBoardIssue | null>(() => {
     state: props.data.targetState === "closed" ? "closed" : "opened",
     webUrl: props.data.targetUrl,
     reference: `#${props.data.target.iid}`,
-    projectId: 0,
+    projectId: props.data.projectId,
     projectPath: props.data.projectPath,
   };
 });

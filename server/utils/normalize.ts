@@ -153,6 +153,7 @@ export function normalizeTodo(todo: GitLabTodo): DevBoardTodo {
       name: todo.author.name,
       avatarUrl: todo.author.avatar_url,
     },
+    projectId: todo.project?.id ?? 0,
     projectPath: todo.project?.path_with_namespace ?? "",
     projectName: todo.project?.name ?? "",
     targetUrl: todo.target_url,
