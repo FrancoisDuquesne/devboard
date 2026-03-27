@@ -31,8 +31,9 @@ export interface GitLabMilestone {
 export interface GitLabIteration {
   id: number;
   iid: number;
-  title: string;
-  state: "upcoming" | "current" | "closed";
+  title: string | null;
+  /** 1 = upcoming, 2 = current, 3 = closed */
+  state: 1 | 2 | 3;
   due_date: string | null;
   start_date: string | null;
   web_url: string;

@@ -206,6 +206,7 @@ export function normalizeNotification(notification: GitHubNotification): DevBoar
     targetState: "open",
     body: notification.subject.title,
     author: { username: "", name: "", avatarUrl: "" },
+    projectId: notification.repository.id,
     projectPath: repo,
     projectName: repo.split("/").pop() ?? "",
     targetUrl,

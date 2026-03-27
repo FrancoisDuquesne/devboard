@@ -44,8 +44,8 @@ function normalizeGitLabIteration(
 ): DevBoardMilestone | null {
   if (!iteration) return null;
   return {
-    title: iteration.title,
-    state: iteration.state === "current" ? "active" : "closed",
+    title: iteration.title || `${iteration.start_date} – ${iteration.due_date}`,
+    state: iteration.state === 2 ? "active" : "closed",
     dueDate: iteration.due_date,
   };
 }
@@ -153,6 +153,7 @@ export function normalizeTodo(todo: GitLabTodo): DevBoardTodo {
       name: todo.author.name,
       avatarUrl: todo.author.avatar_url,
     },
+    projectId: todo.project?.id ?? 0,
     projectPath: todo.project?.path_with_namespace ?? "",
     projectName: todo.project?.name ?? "",
     targetUrl: todo.target_url,

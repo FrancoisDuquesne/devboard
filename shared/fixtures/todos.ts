@@ -1,7 +1,8 @@
 import type { DevBoardTodo } from "~/types";
-import { DEMO_USERS, demoUrl } from "./constants";
+import { DEMO_PROJECTS, DEMO_USERS, demoUrl } from "./constants";
 
 const U = DEMO_USERS;
+const P = DEMO_PROJECTS;
 
 export const demoTodos: DevBoardTodo[] = [
   {
@@ -12,6 +13,7 @@ export const demoTodos: DevBoardTodo[] = [
     targetState: "open",
     body: "Mika Johansson requested your review on !87",
     author: U.mika,
+    projectId: P.frontend.id,
     projectPath: "acme/frontend",
     projectName: "frontend",
     targetUrl: demoUrl("acme/frontend", "merge_requests/87"),
@@ -25,6 +27,7 @@ export const demoTodos: DevBoardTodo[] = [
     targetState: "merged",
     body: "@alex.dev could you review the sentinel config?",
     author: U.priya,
+    projectId: P.infra.id,
     projectPath: "acme/infra",
     projectName: "infra",
     targetUrl: demoUrl("acme/infra", "merge_requests/9"),
@@ -42,6 +45,7 @@ export const demoTodos: DevBoardTodo[] = [
     targetState: "open",
     body: "Pipeline failed for !39",
     author: U.alex,
+    projectId: P.platform.id,
     projectPath: "acme/platform",
     projectName: "platform",
     targetUrl: demoUrl("acme/platform", "merge_requests/39"),
@@ -59,6 +63,7 @@ export const demoTodos: DevBoardTodo[] = [
     targetState: "open",
     body: "Sam Nakamura approved, waiting for one more approval on !42",
     author: U.sam,
+    projectId: P.platform.id,
     projectPath: "acme/platform",
     projectName: "platform",
     targetUrl: demoUrl("acme/platform", "merge_requests/42"),
@@ -72,6 +77,7 @@ export const demoTodos: DevBoardTodo[] = [
     targetState: "closed",
     body: "@alex.dev this is ready for your final review before close",
     author: U.sam,
+    projectId: P.platform.id,
     projectPath: "acme/platform",
     projectName: "platform",
     targetUrl: demoUrl("acme/platform", "issues/21"),

@@ -110,6 +110,7 @@ export interface DevBoardTodo {
   targetState: TodoTargetState;
   body: string;
   author: { username: string; name: string; avatarUrl: string };
+  projectId: number;
   projectPath: string;
   projectName: string;
   targetUrl: string;
